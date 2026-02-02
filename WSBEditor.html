@@ -2,8 +2,8 @@
 <html lang="en">
 <head>
 <!--
-    WSBEditor 0.3.1 (20200803)
-    Copyright (C) 2020  Steve's Toolkit
+    WSBEditor 0.4.0 (20250203)
+    Copyright (C) 2020-2025 Steve's Toolkit
     Website: http://leesteve.tk/WSBEditor/
     GitHub: https://github.com/leestevetk/WSBEditor/
 
@@ -26,10 +26,306 @@
 <script>
     var CurrentTemplateID = 0;
     var CurrentTemplateName, CurrentTemplateFilename = "";
-    var EditorVersion = "0.3.1";
-    var EditorRelease = 20200803;
+    var EditorVersion = "0.4.0";
+    var EditorRelease = 20250203;
     var EditorInitiated = false;
     var SandboxHomeDirectory = "C:\\Users\\WDAGUtilityAccount";
+    var CurrentLanguage = "en";
+    
+    // Multi-language Support
+    var Translations = {
+        "en": {
+            "title": "WSBEditor by Steve's Toolkit",
+            "filename": "Filename",
+            "template": "Template",
+            "change": "Change",
+            "reset": "Reset",
+            "graphics": "Graphics",
+            "enableVGpu": "Enable vGPU",
+            "enableVGpuDesc": "Enable hardware acceleration in Sandbox.",
+            "memory": "Memory",
+            "memoryUnit": "MB",
+            "memoryDesc": "Maximum Sandbox memory usage (actual memory usage may exceed this amount if needed to boot the Sandbox).",
+            "network": "Network",
+            "connectNetwork": "Connect Sandbox to Network",
+            "connectNetworkDesc": "Enable networking in Sandbox via Host's default NAT switch.",
+            "sharedResources": "Shared Resources",
+            "sharedResourcesDesc": "Sandbox will share Host's:",
+            "microphones": "Microphone(s)",
+            "cameras": "Camera(s)",
+            "printers": "Printer(s)",
+            "clipboard": "Clipboard",
+            "clipboardDesc": "Allow copy-and-paste between the Sandbox and the Host.<br />If <a href=\"#Editor_Input_ProtectedClient\">Protected Client</a> is also enabled, you can only copy-and-paste text (but not files).",
+            "mappedUserFolders": "Mapped User Folders",
+            "homeDirectory": "Home Directory:",
+            "homeDirectoryDesc": "By default, your Home Directory is \"C:\\Users\\{Your Username}\".<br />To check, open Command Prompt and type \"echo %userprofile%\" (<a href=\"https://github.com/leestevetk/WSBEditor/wiki/Home-Directory\" target=\"_blank\">learn more</a>).",
+            "desktop": "Desktop",
+            "downloads": "Downloads",
+            "documents": "Documents",
+            "pictures": "Pictures",
+            "music": "Music",
+            "mappedFoldersHint": "Tap once to enable read/write access, tap again to make it read-only.",
+            "mappedFoldersOthers": "Mapped Folders (Others)",
+            "hostFolder": "Host Folder",
+            "sandboxFolder": "Sandbox Folder",
+            "mappedFoldersOthersHint": "Tap once to enable read/write access, tap again to make it read-only.<br />If you do not specify a Sandbox folder, the folder will be mapped to Desktop in Sandbox by default.<br />Note: deselected folders will not appear in the configuration file generated.",
+            "security": "Security",
+            "protectedClient": "Enable Protected Client Mode",
+            "protectedClientDesc": "Enable extra security mitigations to the RDP connection to Sandbox.",
+            "logonCommands": "Logon Commands",
+            "logonCommandsDesc": "Put one command on each line. These commands will automatically be invoked as Sandbox user in the Sandbox after log-on.",
+            "advanced": "Advanced",
+            "showAdvanced": "Show Advanced Settings",
+            "showAdvancedDesc": "Configure AutoSave and other settings relating to how WSBEditor behaves.",
+            "preserveSettings": "Preserve Editor Settings",
+            "preserveSettingsDesc": "Preserve your WSBEditor settings (e.g. home directory path, recent folders, advanced settings) across sessions. This setting itself (\"Preserve Editor Settings\") will be preserved in any event.",
+            "autoSave": "Enable AutoSave",
+            "autoSaveDesc": "Automatically save the latest session to your browser. This allows you to resume your session when you open WSBEditor again, even if you do not download the configuration file. Disabling AutoSave will also delete any saved session.",
+            "includeEditorInfo": "Include Editor Information",
+            "includeEditorInfoDesc": "Generated file will include your selected template, home directory path and other information that can be loaded when you open the file with WSBEditor again.",
+            "open": "Open",
+            "download": "Download",
+            "welcome": "Welcome to WSBEditor!",
+            "welcomeDesc": "<b>WSBEditor</b> is a web-based <a href=\"https://docs.microsoft.com/en-us/windows/security/threat-protection/windows-sandbox/windows-sandbox-overview\" target=\"_blank\">Windows Sandbox</a> configuration file (*.wsb) editor.",
+            "resumeSession": "Resume Last Session",
+            "noSession": "No session available.",
+            "noSessionAutoSave": "No session available: AutoSave disabled.",
+            "warranty": "This software comes with ABSOLUTELY NO WARRANTY.",
+            "gpl": "By proceeding, you accept the <a href=\"https://www.gnu.org/licenses/gpl-3.0.txt\" target=\"_blank\">GNU General Public License</a>.",
+            "copyright": "&copy; Copyright 2020 <a href=\"https://leesteve.tk/\" target=\"_blank\">Steve's Toolkit</a> (<a href=\"https://github.com/leestevetk/WSBEditor\" target=\"_blank\">GitHub</a>)",
+            "continue": "Continue",
+            "templates": "Templates",
+            "description": "Description",
+            "apply": "Apply",
+            "cancel": "Cancel",
+            "templateWindowsDefault": "Windows Default",
+            "templateMoreSecureNoNet": "More Secure",
+            "templateMoreSecureNoNetSub": "(without Networking)",
+            "templateMoreSecureWithNet": "More Secure",
+            "templateMoreSecureWithNetSub": "(with Networking)",
+            "templateMoreFunctions": "More Functions",
+            "templateTestDownloads": "Test Downloads",
+            "templateDescDefault": "Uses Windows's default options.",
+            "templateDescSecureNoNet": "Enables all security options and disables all potentially unsafe functionalities. Networking functionalities are also disabled.",
+            "templateDescSecureWithNet": "Enables all security options and disables all potentially unsafe functionalities, but enables networking functionalities.",
+            "templateDescMoreFunctions": "Enables all available functions.",
+            "templateDescTestDownloads": "Allows you to test downloaded files/programs. This template shares the Host's Downloads folder with the Sandbox.",
+            "resetTitle": "Reset to Template Defaults",
+            "resetDesc": "This will revert all changes and reset all settings to their default values in the <b id=\"FloatBox_Reset_TemplateName\"></b> template.",
+            "resetHint": "This will also empty your Mapped Folders (Others) list.",
+            "openFileTitle": "Open Configuration File",
+            "openFileWarning": "<b>This will overwrite any changes you have made on this page.</b>",
+            "openFileHint1": "To keep your changes, <a href=\"javascript:DownloadFile()\">download a copy</a>.",
+            "openFileHint2": "Choose your configuration file (*.wsb) to continue.",
+            "choose": "Choose",
+            "fileWarnings": "File Warnings",
+            "fileWarningsDesc": "We encountered some warnings while opening <b id=\"FloatBox_OpenWSBWarnings_Filename\"></b>:",
+            "fileWarningsHint": "Other configuration options in the file have been loaded onto the editor.",
+            "placeholderAuto": "Auto",
+            "placeholderHomeDir": "Home Directory",
+            "placeholderRequired": "Required",
+            "readWrite": "Read/write",
+            "readOnly": "Read-only",
+            "disabled": "Disabled",
+            "invalidConfig": "<p><b>Invalid Configuration:</b> ",
+            "invalidConfigEnd": "<br />Please change your settings and try again.</p>",
+            "errorOpening": "<p><b>Error opening ",
+            "errorOpeningEnd": "</b> ",
+            "errorOpeningHint": "</p><p>Please check syntax in your file and try again.</p>",
+            "lastSessionCorrupted": "<p><b>Last session was not resumed because it was corrupted:</b> ",
+            "fileOpened": "<p><b>",
+            "fileOpenedEnd": "</b> has been successfully opened.</p>",
+            "warningsWhileOpening": "<p>There were warning(s) while opening <b>",
+            "warningsWhileOpeningEnd": "</b>.</p>",
+            "jsError": "<p><b>JavaScript Error:</b> ",
+            "jsErrorEnd": ".</p><p>Please try again. If the error persists, please refresh or <a href=\"https://github.com/leestevetk/WSBEditor/issues\" target=\"_blank\">report an issue</a>.</p>",
+            "homeDirectoryRequired": "Home Directory is required. ",
+            "selectLanguage": "Language",
+            "noScript": "You must enable JavaScript to continue."
+        },
+        "zh": {
+            "title": "WSBEditor - Steve's Toolkit",
+            "filename": "文件名",
+            "template": "模板",
+            "change": "更改",
+            "reset": "重置",
+            "graphics": "图形",
+            "enableVGpu": "启用 vGPU",
+            "enableVGpuDesc": "在沙盒中启用硬件加速。",
+            "memory": "内存",
+            "memoryUnit": "MB",
+            "memoryDesc": "沙盒最大内存使用量（如果启动沙盒需要，实际内存使用量可能会超过此数值）。",
+            "network": "网络",
+            "connectNetwork": "连接沙盒到网络",
+            "connectNetworkDesc": "通过主机的默认 NAT 交换机在沙盒中启用网络功能。",
+            "sharedResources": "共享资源",
+            "sharedResourcesDesc": "沙盒将共享主机的：",
+            "microphones": "麦克风",
+            "cameras": "摄像头",
+            "printers": "打印机",
+            "clipboard": "剪贴板",
+            "clipboardDesc": "允许在沙盒和主机之间复制粘贴。<br />如果同时启用了<a href=\"#Editor_Input_ProtectedClient\">受保护客户端</a>，则只能复制粘贴文本（不能复制粘贴文件）。",
+            "mappedUserFolders": "映射的用户文件夹",
+            "homeDirectory": "主目录：",
+            "homeDirectoryDesc": "默认情况下，您的主目录是 \"C:\\Users\\{您的用户名}\".<br />要查看，请打开命令提示符并输入 \"echo %userprofile%\" (<a href=\"https://github.com/leestevetk/WSBEditor/wiki/Home-Directory\" target=\"_blank\">了解更多</a>).",
+            "desktop": "桌面",
+            "downloads": "下载",
+            "documents": "文档",
+            "pictures": "图片",
+            "music": "音乐",
+            "mappedFoldersHint": "点击一次启用读写访问，再次点击设为只读。",
+            "mappedFoldersOthers": "映射的其他文件夹",
+            "hostFolder": "主机文件夹",
+            "sandboxFolder": "沙盒文件夹",
+            "mappedFoldersOthersHint": "点击一次启用读写访问，再次点击设为只读。<br />如果您未指定沙盒文件夹，该文件夹默认将映射到沙盒的桌面。<br />注意：未选中的文件夹不会出现在生成的配置文件中。",
+            "security": "安全",
+            "protectedClient": "启用受保护客户端模式",
+            "protectedClientDesc": "为到沙盒的 RDP 连接启用额外的安全缓解措施。",
+            "logonCommands": "登录命令",
+            "logonCommandsDesc": "每行输入一个命令。这些命令将在登录后自动以沙盒用户身份在沙盒中调用。",
+            "advanced": "高级",
+            "showAdvanced": "显示高级设置",
+            "showAdvancedDesc": "配置自动保存和其他与 WSBEditor 行为相关的设置。",
+            "preserveSettings": "保留编辑器设置",
+            "preserveSettingsDesc": "在会话之间保留您的 WSBEditor 设置（例如主目录路径、最近的文件夹、高级设置）。此设置本身（\"保留编辑器设置\"）无论如何都会被保留。",
+            "autoSave": "启用自动保存",
+            "autoSaveDesc": "自动将最新会话保存到您的浏览器。这使您可以在再次打开 WSBEditor 时恢复会话，即使您没有下载配置文件。禁用自动保存也会删除任何已保存的会话。",
+            "includeEditorInfo": "包含编辑器信息",
+            "includeEditorInfoDesc": "生成的文件将包含您选择的模板、主目录路径和其他信息，当您再次使用 WSBEditor 打开该文件时可以加载这些信息。",
+            "open": "打开",
+            "download": "下载",
+            "welcome": "欢迎使用 WSBEditor！",
+            "welcomeDesc": "<b>WSBEditor</b> 是一个基于 Web 的 <a href=\"https://docs.microsoft.com/en-us/windows/security/threat-protection/windows-sandbox/windows-sandbox-overview\" target=\"_blank\">Windows 沙盒</a> 配置文件 (*.wsb) 编辑器。",
+            "resumeSession": "恢复上次会话",
+            "noSession": "没有可用会话。",
+            "noSessionAutoSave": "没有可用会话：自动保存已禁用。",
+            "warranty": "本软件不提供任何担保。",
+            "gpl": "继续即表示您接受 <a href=\"https://www.gnu.org/licenses/gpl-3.0.txt\" target=\"_blank\">GNU 通用公共许可证</a>。",
+            "copyright": "&copy; 版权所有 2020 <a href=\"https://leesteve.tk/\" target=\"_blank\">Steve's Toolkit</a> (<a href=\"https://github.com/leestevetk/WSBEditor\" target=\"_blank\">GitHub</a>)",
+            "continue": "继续",
+            "templates": "模板",
+            "description": "描述",
+            "apply": "应用",
+            "cancel": "取消",
+            "templateWindowsDefault": "Windows 默认",
+            "templateMoreSecureNoNet": "更安全",
+            "templateMoreSecureNoNetSub": "（无网络）",
+            "templateMoreSecureWithNet": "更安全",
+            "templateMoreSecureWithNetSub": "（有网络）",
+            "templateMoreFunctions": "更多功能",
+            "templateTestDownloads": "测试下载",
+            "templateDescDefault": "使用 Windows 的默认选项。",
+            "templateDescSecureNoNet": "启用所有安全选项并禁用所有潜在不安全的功 ​​ 能。网络功能也被禁用。",
+            "templateDescSecureWithNet": "启用所有安全选项并禁用所有潜在不安全的功 ​​ 能，但启用网络功能。",
+            "templateDescMoreFunctions": "启用所有可用功能。",
+            "templateDescTestDownloads": "允许您测试下载的文件/程序。此模板与沙盒共享主机的下载文件夹。",
+            "resetTitle": "重置为模板默认值",
+            "resetDesc": "这将恢复所有更改并将所有设置重置为 <b id=\"FloatBox_Reset_TemplateName\"></b> 模板的默认值。",
+            "resetHint": "这也将清空您的映射文件夹（其他）列表。",
+            "openFileTitle": "打开配置文件",
+            "openFileWarning": "<b>这将覆盖您在此页面上所做的任何更改。</b>",
+            "openFileHint1": "要保留您的更改，请<a href=\"javascript:DownloadFile()\">下载副本</a>。",
+            "openFileHint2": "选择您的配置文件 (*.wsb) 以继续。",
+            "choose": "选择",
+            "fileWarnings": "文件警告",
+            "fileWarningsDesc": "我们在打开 <b id=\"FloatBox_OpenWSBWarnings_Filename\"></b> 时遇到了一些警告：",
+            "fileWarningsHint": "文件中的其他配置选项已加载到编辑器中。",
+            "placeholderAuto": "自动",
+            "placeholderHomeDir": "主目录",
+            "placeholderRequired": "必填",
+            "readWrite": "读写",
+            "readOnly": "只读",
+            "disabled": "禁用",
+            "invalidConfig": "<p><b>配置无效：</b> ",
+            "invalidConfigEnd": "<br />请更改您的设置并重试。</p>",
+            "errorOpening": "<p><b>打开时出错 ",
+            "errorOpeningEnd": "</b> ",
+            "errorOpeningHint": "</p><p>请检查文件中的语法并重试。</p>",
+            "lastSessionCorrupted": "<p><b>上次会话未恢复，因为它已损坏：</b> ",
+            "fileOpened": "<p><b>",
+            "fileOpenedEnd": "</b> 已成功打开。</p>",
+            "warningsWhileOpening": "<p>打开 <b>",
+            "warningsWhileOpeningEnd": "</b> 时出现警告。</p>",
+            "jsError": "<p><b>JavaScript 错误：</b> ",
+            "jsErrorEnd": ".</p><p>请重试。如果错误仍然存在，请刷新或<a href=\"https://github.com/leestevetk/WSBEditor/issues\" target=\"_blank\">报告问题</a>。</p>",
+            "homeDirectoryRequired": "主目录是必需的。 ",
+            "selectLanguage": "语言",
+            "noScript": "您必须启用 JavaScript 才能继续。"
+        }
+    };
+    
+    function t(key) {
+        var lang = Translations[CurrentLanguage] || Translations["en"];
+        return lang[key] || Translations["en"][key] || key;
+    }
+    
+    function setLanguage(lang) {
+        CurrentLanguage = lang;
+        localStorage.setItem("WSBEditor_Language", lang);
+        document.documentElement.lang = lang === "zh" ? "zh-CN" : "en";
+        applyTranslations();
+    }
+    
+    function applyTranslations() {
+        // Update title
+        document.title = t("title");
+        
+        // Update all elements with data-i18n attribute
+        var elements = document.querySelectorAll("[data-i18n]");
+        for (var i = 0; i < elements.length; i++) {
+            var el = elements[i];
+            var key = el.getAttribute("data-i18n");
+            var translation = t(key);
+            if (el.tagName === "INPUT" && (el.type === "button" || el.type === "submit")) {
+                el.value = translation;
+            } else if (el.tagName === "INPUT" && el.type === "text") {
+                el.placeholder = translation;
+            } else {
+                el.innerHTML = translation;
+            }
+        }
+        
+        // Update placeholders
+        var placeholders = document.querySelectorAll("[data-i18n-placeholder]");
+        for (var i = 0; i < placeholders.length; i++) {
+            var el = placeholders[i];
+            var key = el.getAttribute("data-i18n-placeholder");
+            el.placeholder = t(key);
+        }
+        
+        // Update template name
+        updateTemplateDisplay();
+        
+        // Update tristate labels
+        updateTristateLabels();
+    }
+    
+    function updateTemplateDisplay() {
+        var templateNames = {
+            0: t("templateWindowsDefault"),
+            1: t("templateMoreSecureNoNet"),
+            2: t("templateMoreSecureWithNet"),
+            3: t("templateMoreFunctions"),
+            4: t("templateTestDownloads")
+        };
+        if (CurrentTemplateID !== undefined && templateNames[CurrentTemplateID]) {
+            document.getElementById('Editor_TemplateName').innerHTML = templateNames[CurrentTemplateID];
+            if (document.getElementById('FloatBox_Reset_TemplateName')) {
+                document.getElementById('FloatBox_Reset_TemplateName').innerHTML = templateNames[CurrentTemplateID];
+            }
+        }
+    }
+    
+    function updateTristateLabels() {
+        var labels = { 0: t("disabled"), 1: t("readWrite"), 2: t("readOnly") };
+        for (var key in Tristate_Status) {
+            var status = Tristate_Status[key];
+            var notesEl = document.getElementById(key + '_Notes');
+            if (notesEl) {
+                notesEl.innerHTML = labels[status];
+            }
+        }
+    }
     
     // Editor Handlers
     function Editor_Onchange() {
@@ -54,16 +350,16 @@
         // Check Mapped User Folders
         if(document.querySelectorAll("input[name=Editor_Input_MappedUserFolders]:checked,input[name=Editor_Input_MappedUserFolders]:indeterminate").length > 0) {
             document.getElementById('Editor_Input_HomeDirectory').required = true;
-            document.getElementById('Editor_Input_HomeDirectory').setAttribute("placeholder","Required");
+            document.getElementById('Editor_Input_HomeDirectory').setAttribute("placeholder",t("placeholderRequired"));
             var HomeDirectoryPath = document.getElementById('Editor_Input_HomeDirectory').value;
             if(HomeDirectoryPath == "") {
-                ErrorMsg = "Home Directory is required. ";
+                ErrorMsg = t("homeDirectoryRequired");
                 IndicateErrRow("MappedUserFolders");
             } else {
             }
         } else {
             document.getElementById('Editor_Input_HomeDirectory').required = false;
-            document.getElementById('Editor_Input_HomeDirectory').setAttribute("placeholder","Home Directory");
+            document.getElementById('Editor_Input_HomeDirectory').setAttribute("placeholder",t("placeholderHomeDir"));
         }
         // Check HomeDirectory
         document.getElementById('Editor_Input_HomeDirectory').value = ParsePath(document.getElementById('Editor_Input_HomeDirectory').value);
@@ -148,16 +444,16 @@
         // Apply Template
         switch(TemplateID) {
             case 1:
-                CurrentTemplateName = "More Secure (without Networking)";
+                CurrentTemplateName = t("templateMoreSecureNoNet");
                 SetEditorInput("ProtectedClient",true);
                 break;
             case 2:
-                CurrentTemplateName = "More Secure (with Networking)";
+                CurrentTemplateName = t("templateMoreSecureWithNet");
                 SetEditorInput("Networking",true);
                 SetEditorInput("ProtectedClient",true);
                 break;
             case 3:
-                CurrentTemplateName = "More Functions";
+                CurrentTemplateName = t("templateMoreFunctions");
                 SetEditorInput("vGPU",true);
                 SetEditorInput("Networking",true);
                 SetEditorInput("AudioInput",true);
@@ -166,14 +462,14 @@
                 SetEditorInput("ClipboardRedirection",true);
                 break;
             case 4:
-                CurrentTemplateName = "Test Downloads";
+                CurrentTemplateName = t("templateTestDownloads");
                 SetEditorInput("Networking",true);
                 SetEditorInput("AudioInput",true);
                 SetEditorInput("ClipboardRedirection",true);
                 SetEditorInput("MappedUserFolders_Downloads",1);
                 break;
             default:
-                CurrentTemplateName = "Windows Default";
+                CurrentTemplateName = t("templateWindowsDefault");
                 SetEditorInput("Networking",true);
                 SetEditorInput("AudioInput",true);
                 SetEditorInput("ClipboardRedirection",true);
@@ -317,54 +613,54 @@
             	if(GetHostFolder.length > 0 && GetHostFolder[0].innerHTML != "") {
                     var MappedFoldersOthers_Tbody = document.getElementById('Editor_MappedFoldersOthers_Tbody');
             		var HostFolder = ParsePath(GetHostFolder[0].innerHTML);
-					var GetSandboxFolder = GetMappedFolders[i].getElementsByTagName("sandboxfolder");
-					if(GetSandboxFolder.length > 0) {
-						var SandboxFolder = ParsePath(GetSandboxFolder[0].innerHTML);
-					} else {
-						var SandboxFolder = "";
-					}
-					var UserFolders = ["Desktop", "Downloads", "Documents", "Pictures", "Music"];
-					var CorrespondingUserFolder = "";
-					for(j = 0; j < UserFolders.length; j++) {
-						// Guess HomeDirectory if empty
-						if(HomeDirectory == "") {
-							if(HostFolder.toLowerCase().endsWith("\\"+UserFolders[j].toLowerCase()) == true) {
-								HomeDirectory = HostFolder.slice(0, -UserFolders[j].length-1);
-								SetEditorInput("HomeDirectory",HomeDirectory);
-								LoadWSBWarnings.push("Home Directory is assumed to be "+HomeDirectory+".");
-							}
-						}
-						// Check if corresponds to a user folder
-						if(HostFolder.toLowerCase() == HomeDirectory.toLowerCase()+"\\"+UserFolders[j].toLowerCase() && SandboxFolder.toLowerCase() == SandboxHomeDirectory.toLowerCase()+"\\"+UserFolders[j].toLowerCase()) {
-							CorrespondingUserFolder = UserFolders[j];
+				var GetSandboxFolder = GetMappedFolders[i].getElementsByTagName("sandboxfolder");
+				if(GetSandboxFolder.length > 0) {
+					var SandboxFolder = ParsePath(GetSandboxFolder[0].innerHTML);
+				} else {
+					var SandboxFolder = "";
+				}
+				var UserFolders = ["Desktop", "Downloads", "Documents", "Pictures", "Music"];
+				var CorrespondingUserFolder = "";
+				for(j = 0; j < UserFolders.length; j++) {
+					// Guess HomeDirectory if empty
+					if(HomeDirectory == "") {
+						if(HostFolder.toLowerCase().endsWith("\\"+UserFolders[j].toLowerCase()) == true) {
+							HomeDirectory = HostFolder.slice(0, -UserFolders[j].length-1);
+							SetEditorInput("HomeDirectory",HomeDirectory);
+							LoadWSBWarnings.push("Home Directory is assumed to be "+HomeDirectory+".");
 						}
 					}
-					if(CorrespondingUserFolder != "") {
-						var TargetCheckboxID = "MappedUserFolders_"+CorrespondingUserFolder;
-					} else {
-                        var TargetCheckboxID = "MappedFoldersOthers_"+MappedFoldersOthers_Tbody.rows.length;
-                        Editor_MappedFoldersOthers_AppendRow(HostFolder,SandboxFolder);
-                        for(j = 0; j < MappedFoldersOthers_Tbody.rows.length; j++) {
-                            Editor_MappedFoldersOthers_Onfocusout(j);
-                        }
+					// Check if corresponds to a user folder
+					if(HostFolder.toLowerCase() == HomeDirectory.toLowerCase()+"\\"+UserFolders[j].toLowerCase() && SandboxFolder.toLowerCase() == SandboxHomeDirectory.toLowerCase()+"\\"+UserFolders[j].toLowerCase()) {
+						CorrespondingUserFolder = UserFolders[j];
 					}
-					// Check readonly or not and set checkbox
-					SetEditorInput(TargetCheckboxID,1);
-					var GetReadOnly = GetMappedFolders[i].getElementsByTagName("readonly");
-					if(GetReadOnly.length > 0) {
-						switch(GetReadOnly[0].innerHTML.toLowerCase()) {
-							case "true":
-								SetEditorInput(TargetCheckboxID,2);
-								break;
-							case "false":
-								break;
-							case "":
-								break;
-							default:
-								LoadWSBWarnings.push("&lt;ReadOnly&gt; in &lt;MappedFolder&gt; must be \"true\" or \"false\"; invalid value \""+GetReadOnly[0].innerHTML+"\" ignored.");
-								break;
-						}
+				}
+				if(CorrespondingUserFolder != "") {
+					var TargetCheckboxID = "MappedUserFolders_"+CorrespondingUserFolder;
+				} else {
+                    var TargetCheckboxID = "MappedFoldersOthers_"+MappedFoldersOthers_Tbody.rows.length;
+                    Editor_MappedFoldersOthers_AppendRow(HostFolder,SandboxFolder);
+                    for(j = 0; j < MappedFoldersOthers_Tbody.rows.length; j++) {
+                        Editor_MappedFoldersOthers_Onfocusout(j);
+                    }
+				}
+				// Check readonly or not and set checkbox
+				SetEditorInput(TargetCheckboxID,1);
+				var GetReadOnly = GetMappedFolders[i].getElementsByTagName("readonly");
+				if(GetReadOnly.length > 0) {
+					switch(GetReadOnly[0].innerHTML.toLowerCase()) {
+						case "true":
+							SetEditorInput(TargetCheckboxID,2);
+							break;
+						case "false":
+							break;
+						case "":
+							break;
+						default:
+							LoadWSBWarnings.push("&lt;ReadOnly&gt; in &lt;MappedFolder&gt; must be \"true\" or \"false\"; invalid value \""+GetReadOnly[0].innerHTML+"\" ignored.");
+							break;
 					}
+				}
             	}
             	
             }
@@ -436,7 +732,7 @@
         }
         // WSBEditorConfig
         if(InclEditorXML == true || document.getElementById('Editor_Input_EditorXML').checked == true) {
-        	WSBXML += "    <WSBEditorConfig>%0D%0A        <EditorVersion>"+EditorVersion+"</EditorVersion>%0D%0A        <EditorRelease>"+EditorRelease+"</EditorRelease>%0D%0A        <TemplateID>"+CurrentTemplateID+"</TemplateID>%0D%0A        <DownloadTime>"+Date.now()+"</DownloadTime>%0D%0A        <HomeDirectory>"+document.getElementById('Editor_Input_HomeDirectory').value+"</HomeDirectory>%0D%0A    </WSBEditorConfig>%0D%0A";
+        	WSBXML += "    <WSBEditorConfig>%0D%0A        <EditorVersion>"+EditorVersion+"</EditorVersion>%0D%0A        <EditorRelease>"+EditorRelease+"</EditorRelease>%0D%0A        <TemplateID>"+CurrentTemplateID+"</TemplateID>%0D%0A        <DownloadTime>"+Date.now()+"</DownloadTime>%0D%0A        <HomeDirectory>"+document.getElementById('Editor_Input_HomeDirectory').value+"</HomeDirectory>%0D%0A        <Language>"+CurrentLanguage+"</Language>%0D%0A    </WSBEditorConfig>%0D%0A";
         }
         // End
         WSBXML += "</Configuration>";
@@ -452,7 +748,7 @@
             FileContainer.click();
             document.body.removeChild(FileContainer);
         } else {
-            ShowAlert("<p><b>Invalid Configuration:</b> "+document.getElementById('Editor_Footer_Message').innerHTML+"<br />Please change your settings and try again.</p>","Red");
+            ShowAlert(t("invalidConfig")+document.getElementById('Editor_Footer_Message').innerHTML+t("invalidConfigEnd"),"Red");
         }
     }
     
@@ -464,19 +760,19 @@
                 document.getElementById(Tid).checked = true;
                 document.getElementById(Tid).indeterminate = false;
                 Tristate_Status[Tid] = 1;
-                var TNote = "Read/write";
+                var TNote = t("readWrite");
                 break;
             case 2:
                 document.getElementById(Tid).checked = true;
                 document.getElementById(Tid).indeterminate = true;
                 Tristate_Status[Tid] = 2;
-                var TNote = "Read-only";
+                var TNote = t("readOnly");
                 break;
             default:
                 document.getElementById(Tid).checked = false;
                 document.getElementById(Tid).indeterminate = false;
                 Tristate_Status[Tid] = 0;
-                var TNote = "Disabled";
+                var TNote = t("disabled");
                 break;
         }
         document.getElementById(Tid+'_Notes').innerHTML = TNote;
@@ -516,7 +812,7 @@
             var LoadResult = LoadWSB(localStorage.getItem("WSBEditor_LastSession_WSBXML"));
             if(LoadResult[0] == false) {
                 ApplyTemplate(0);
-                ShowAlert("<p><b>Last session was not resumed because it was corrupted:</b> "+LoadResult[1],"Red");
+                ShowAlert(t("lastSessionCorrupted")+LoadResult[1],"Red");
             }
         } else {
             ApplyTemplate(0);
@@ -530,21 +826,22 @@
         HideFloatBox('Welcome');
     }
     function FloatBox_Templates_Update() {
+        var NewText;
         switch (parseInt(document.querySelector('input[name=FloatBox_Templates_Template]:checked').value)) {
             case 1:
-                NewText = "Enables all security options and disables all potentially unsafe functionalities. Networking functionalities are also disabled.";
+                NewText = t("templateDescSecureNoNet");
                 break;
             case 2:
-                NewText = "Enables all security options and disables all potentially unsafe functionalities, but enables networking functionalities.";
+                NewText = t("templateDescSecureWithNet");
                 break;
             case 3:
-                NewText = "Enables all available functions.";
+                NewText = t("templateDescMoreFunctions");
                 break;
             case 4:
-                NewText = "Allows you to test downloaded files/programs.  This template shares the Host's Downloads folder with the Sandbox.";
+                NewText = t("templateDescTestDownloads");
                 break;
             default:
-                NewText = "Uses Windows\'s default options.";
+                NewText = t("templateDescDefault");
         }
         document.getElementById('FloatBox_Templates_Description').innerHTML = NewText;
     }
@@ -573,16 +870,16 @@
                     document.getElementById('FloatBox_OpenWSBWarnings_Table').innerHTML = "";
                     document.getElementById('Editor_Input_Filename').value = SelectedFile.name;
                     if(LoadResult[1].length != 0) {
-                        ShowAlert("<p>There were warning(s) while opening <b>"+SelectedFile.name+"</b>.</p>","Yellow");
+                        ShowAlert(t("warningsWhileOpening")+SelectedFile.name+t("warningsWhileOpeningEnd"),"Yellow");
                         for(i = 0; i < LoadResult[1].length; i++) {
                             document.getElementById('FloatBox_OpenWSBWarnings_Table').insertRow(-1).insertCell(0).innerHTML = LoadResult[1][i];
                         }
                         document.getElementById('FloatBox_OpenWSBWarnings_Filename').innerHTML = SelectedFile.name;
                         ShowFloatBox("OpenWSBWarnings");
                     }
-                    ShowAlert("<p><b>"+SelectedFile.name+"</b> has been successfully opened.</p>","Green");
+                    ShowAlert(t("fileOpened")+SelectedFile.name+t("fileOpenedEnd"),"Green");
                 } else {
-                    ShowAlert("<p><b>Error opening "+SelectedFile.name+":</b> "+LoadResult[1]+"</p><p>Please check syntax in your file and try again.</p>","Red");
+                    ShowAlert(t("errorOpening")+SelectedFile.name+t("errorOpeningEnd")+LoadResult[1]+t("errorOpeningHint"),"Red");
                 }
                 document.getElementById('FloatBox_Open').reset();
             }
@@ -620,7 +917,7 @@
             }
         }
         if(HostFolder.value == "") {
-            SandboxFolder.setAttribute("placeholder","Sandbox Folder");
+            SandboxFolder.setAttribute("placeholder",t("sandboxFolder"));
         } else {
             // Set Read/write and SandboxFolder placeholder if not empty
             var Checkbox = document.getElementById("Editor_Input_MappedFoldersOthers_"+Eid);
@@ -664,6 +961,22 @@
     }
     
     window.onload = function() {
+        // Load saved language preference
+        var savedLang = localStorage.getItem("WSBEditor_Language");
+        if (savedLang && Translations[savedLang]) {
+            CurrentLanguage = savedLang;
+            document.documentElement.lang = savedLang === "zh" ? "zh-CN" : "en";
+        }
+        
+        // Set language selector
+        var langSelector = document.getElementById('LanguageSelector');
+        if (langSelector) {
+            langSelector.value = CurrentLanguage;
+        }
+        
+        // Apply translations
+        applyTranslations();
+        
         // Test JS
         document.getElementById('FloatBox_Welcome_SubmitButton').disabled = false;
         // Set Tristate Checkbox Handler
@@ -710,7 +1023,7 @@
             document.getElementById("FloatBox_Welcome_Input_Resume").checked = false;
             document.getElementById("FloatBox_Welcome_Input_Resume").disabled = true;
             if(localStorage.getItem("WSBEditor_EditorSettings_AutoSave") == "false") {
-            	document.getElementById("FloatBox_Welcome_Input_Resume_Notes").innerHTML = "No session available: AutoSave disabled.";
+            	document.getElementById("FloatBox_Welcome_Input_Resume_Notes").innerHTML = t("noSessionAutoSave");
             }
         }
     }
@@ -720,7 +1033,7 @@
         } else {
             var ShowMsg = errMsg+' at '+errURL+' ('+errLine+', '+errCol+')';
         }
-        ShowAlert('<p><b>JavaScript Error:</b> '+ShowMsg+'.</p><p>Please try again.  If the error persists, please refresh or <a href="https://github.com/leestevetk/WSBEditor/issues" target="_blank">report an issue</a>.</p>',"Red");
+        ShowAlert(t("jsError")+ShowMsg+t("jsErrorEnd"),"Red");
     }
     window.onbeforeunload = function() {
         if(EditorInitiated == true) {
@@ -741,7 +1054,7 @@
         width: 100%;
     }
     html, body, button, input, select, textarea {
-        font-family: "Ubuntu", "Calibri", "Arial", sans-serif;
+        font-family: "Ubuntu", "Calibri", "Arial", "Microsoft YaHei", "SimHei", sans-serif;
         font-size: 100%;
         line-height: 1.2;
         border-radius: 0;
@@ -1133,6 +1446,19 @@
     table#Editor_MappedFoldersOthers_Table td:not(:first-child) {
         width: calc(50% - 30px);
     }
+    select#LanguageSelector {
+        position: fixed;
+        top: 10px;
+        right: 10px;
+        z-index: 100;
+        padding: 5px 10px;
+        border: 1px solid #888;
+        background-color: #FFF;
+        font-size: 0.9em;
+    }
+    select#LanguageSelector:hover {
+        border-color: #444;
+    }
     @media only screen and (min-width: 600px) {
 		table.EditorTable>tbody>tr>td {
 			padding-left: 25px;
@@ -1153,129 +1479,133 @@
 </style>
 </head>
 <body>
+    <select id="LanguageSelector" onchange="setLanguage(this.value)">
+        <option value="en">English</option>
+        <option value="zh">中文</option>
+    </select>
     <form id="Editor" action="javascript:DownloadFile()">
         <table class="EditorTable">
             <tr id="EditorRow_Filename">
-                <td>Filename</td>
+                <td data-i18n="filename">Filename</td>
                 <td>
                     <input type="text" id="Editor_Input_Filename" class="PreservedInput" />
                 </td>
             </tr>
             <tr id="EditorRow_Template">
-                <td>Template</td>
+                <td data-i18n="template">Template</td>
                 <td>
                     <span id="Editor_TemplateName"></span><br />
-                    <input type="button" value="Change" onclick="javascript:ShowFloatBox('Templates')" /><input type="button" value="Reset" onclick="javascript:ShowFloatBox('Reset')" />
+                    <input type="button" data-i18n="change" value="Change" onclick="javascript:ShowFloatBox('Templates')" /><input type="button" data-i18n="reset" value="Reset" onclick="javascript:ShowFloatBox('Reset')" />
                 </td>
             </tr>
             <tr id="EditorRow_Graphics">
-                <td>Graphics</td>
+                <td data-i18n="graphics">Graphics</td>
                 <td>
                     <input type="Checkbox" id="Editor_Input_vGPU" />
                     <label for="Editor_Input_vGPU">
                         <span class="Checkmark"></span>
-                        Enable vGPU
-                        <span class="h6span">Enable hardware acceleration in Sandbox.</span>
+                        <span data-i18n="enableVGpu">Enable vGPU</span>
+                        <span class="h6span" data-i18n="enableVGpuDesc">Enable hardware acceleration in Sandbox.</span>
                     </label>
                 </td>
             </tr>
             <tr id="EditorRow_Memory">
-                <td>Memory</td>
+                <td data-i18n="memory">Memory</td>
                 <td>
-                    <input type="number" id="Editor_Input_MemoryInMB" placeholder="Auto" min="1" /> MB
-                    <h6>Maximum Sandbox memory usage (actual memory usage may exceed this amount if needed to boot the Sandbox).</h6>
+                    <input type="number" id="Editor_Input_MemoryInMB" data-i18n-placeholder="placeholderAuto" placeholder="Auto" min="1" /> <span data-i18n="memoryUnit">MB</span>
+                    <h6 data-i18n="memoryDesc">Maximum Sandbox memory usage (actual memory usage may exceed this amount if needed to boot the Sandbox).</h6>
                 </td>
             </tr>
             <tr id="EditorRow_Network">
-                <td>Network</td>
+                <td data-i18n="network">Network</td>
                 <td>
                 	<input type="Checkbox" id="Editor_Input_Networking" />
                     <label for="Editor_Input_Networking">
                         <span class="Checkmark"></span>
-                        Connect Sandbox to Network
-                        <span class="h6span">Enable networking in Sandbox via Host's default NAT switch.</span>
+                        <span data-i18n="connectNetwork">Connect Sandbox to Network</span>
+                        <span class="h6span" data-i18n="connectNetworkDesc">Enable networking in Sandbox via Host's default NAT switch.</span>
                     </label>
                 </td>
             </tr>
             <tr id="EditorRow_SharedResources">
-                <td>Shared Resources</td>
+                <td data-i18n="sharedResources">Shared Resources</td>
                 <td>
-                    Sandbox will share Host's:<br /><br />
+                    <span data-i18n="sharedResourcesDesc">Sandbox will share Host's:</span><br /><br />
                     <input type="Checkbox" id="Editor_Input_AudioInput" />
                     <label for="Editor_Input_AudioInput">
                         <span class="Checkmark"></span>
-                        Microphone(s)
+                        <span data-i18n="microphones">Microphone(s)</span>
                     </label>
                 	<input type="Checkbox" id="Editor_Input_VideoInput" />
                     <label for="Editor_Input_VideoInput">
                         <span class="Checkmark"></span>
-                        Camera(s)
+                        <span data-i18n="cameras">Camera(s)</span>
                     </label>
                     <input type="Checkbox" id="Editor_Input_PrinterRedirection" />
                     <label for="Editor_Input_PrinterRedirection">
                         <span class="Checkmark"></span>
-                        Printer(s)
+                        <span data-i18n="printers">Printer(s)</span>
                     </label>
                     <input type="Checkbox" id="Editor_Input_ClipboardRedirection" />
                     <label for="Editor_Input_ClipboardRedirection">
                         <span class="Checkmark"></span>
-                        Clipboard
-                        <span class="h6span">Allow copy-and-paste between the Sandbox and the Host.<br />If <a href="#Editor_Input_ProtectedClient">Protected Client</a> is also enabled, you can only copy-and-paste text (but not files).</span>
+                        <span data-i18n="clipboard">Clipboard</span>
+                        <span class="h6span" data-i18n="clipboardDesc">Allow copy-and-paste between the Sandbox and the Host.<br />If <a href="#Editor_Input_ProtectedClient">Protected Client</a> is also enabled, you can only copy-and-paste text (but not files).</span>
                     </label>
                 </td>
             </tr>
             <tr id="EditorRow_MappedUserFolders">
-                <td>Mapped User Folders</td>
+                <td data-i18n="mappedUserFolders">Mapped User Folders</td>
                 <td>
                     <label>
-                        Home Directory:<br />
+                        <span data-i18n="homeDirectory">Home Directory:</span><br />
                         <input type="text" id="Editor_Input_HomeDirectory" class="PreservedInput" />
-                        <span class="h6span">By default, your Home Directory is "C:\Users\{Your Username}".<br />To check, open Command Prompt and type "echo %userprofile%" (<a href="https://github.com/leestevetk/WSBEditor/wiki/Home-Directory" target="_blank">learn more</a>).</span>
+                        <span class="h6span" data-i18n="homeDirectoryDesc">By default, your Home Directory is "C:\Users\{Your Username}".<br />To check, open Command Prompt and type "echo %userprofile%" (<a href="https://github.com/leestevetk/WSBEditor/wiki/Home-Directory" target="_blank">learn more</a>).</span>
                     </label>
                     <br />
                     <input type="Checkbox" name="Editor_Input_MappedUserFolders" id="Editor_Input_MappedUserFolders_Desktop" value="Desktop" class="TristateCheckbox" />
                     <label for="Editor_Input_MappedUserFolders_Desktop">
                         <span class="Checkmark"></span>
-                        Desktop
+                        <span data-i18n="desktop">Desktop</span>
                         <span class="h6span" id="Editor_Input_MappedUserFolders_Desktop_Notes"></span>
                     </label>
                     <input type="Checkbox" name="Editor_Input_MappedUserFolders" id="Editor_Input_MappedUserFolders_Downloads" value="Downloads" class="TristateCheckbox" />
                     <label for="Editor_Input_MappedUserFolders_Downloads">
                         <span class="Checkmark"></span>
-                        Downloads
+                        <span data-i18n="downloads">Downloads</span>
                         <span class="h6span" id="Editor_Input_MappedUserFolders_Downloads_Notes"></span>
                     </label>
                     <input type="Checkbox" name="Editor_Input_MappedUserFolders" id="Editor_Input_MappedUserFolders_Documents" value="Documents" class="TristateCheckbox" />
                     <label for="Editor_Input_MappedUserFolders_Documents">
                         <span class="Checkmark"></span>
-                        Documents
+                        <span data-i18n="documents">Documents</span>
                         <span class="h6span" id="Editor_Input_MappedUserFolders_Documents_Notes"></span>
                     </label>
                     <input type="Checkbox" name="Editor_Input_MappedUserFolders" id="Editor_Input_MappedUserFolders_Pictures" value="Pictures" class="TristateCheckbox" />
                     <label for="Editor_Input_MappedUserFolders_Pictures">
                         <span class="Checkmark"></span>
-                        Pictures
+                        <span data-i18n="pictures">Pictures</span>
                         <span class="h6span" id="Editor_Input_MappedUserFolders_Pictures_Notes"></span>
                     </label>
                     <input type="Checkbox" name="Editor_Input_MappedUserFolders" id="Editor_Input_MappedUserFolders_Music" value="Music" class="TristateCheckbox" />    
                     <label for="Editor_Input_MappedUserFolders_Music">
                         <span class="Checkmark"></span>
-                        Music
+                        <span data-i18n="music">Music</span>
                         <span class="h6span" id="Editor_Input_MappedUserFolders_Music_Notes"></span>
                     </label>
-                    <h6>Tap once to enable read/write access, tap again to make it read-only.</h6>
+                    <h6 data-i18n="mappedFoldersHint">Tap once to enable read/write access, tap again to make it read-only.</h6>
                 </td>
             </tr>
             <tr id="EditorRow_MappedFoldersOthers">
-                <td>Mapped Folders (Others)</td>
+                <td data-i18n="mappedFoldersOthers">Mapped Folders (Others)</td>
                 <td>
                     <div class="TableContainer">
                         <table class="BorderTable" id="Editor_MappedFoldersOthers_Table">
                             <thead>
                                 <tr>
                                     <td></td>
-                                    <td>Host Folder</td>
-                                    <td>Sandbox Folder</td>
+                                    <td data-i18n="hostFolder">Host Folder</td>
+                                    <td data-i18n="sandboxFolder">Sandbox Folder</td>
                                 </tr>
                             </thead>
                             <tbody id="Editor_MappedFoldersOthers_Tbody">
@@ -1285,61 +1615,61 @@
                                         <label for="Editor_Input_MappedFoldersOthers_0"><span class="Checkmark"></span><span id="Editor_Input_MappedFoldersOthers_0_Notes" style="display:none"></span></label>
                                     </td>
                                     <td>
-                                        <input type="text" placeholder="Host Folder" id="Editor_Input_MappedFoldersOthers_0_HostFolder" oninput="javascript:Editor_MappedFoldersOthers_Oninput(0)" onfocusout="javascript:Editor_MappedFoldersOthers_Onfocusout(0)" />
+                                        <input type="text" data-i18n-placeholder="hostFolder" placeholder="Host Folder" id="Editor_Input_MappedFoldersOthers_0_HostFolder" oninput="javascript:Editor_MappedFoldersOthers_Oninput(0)" onfocusout="javascript:Editor_MappedFoldersOthers_Onfocusout(0)" />
                                     </td>
                                     <td>
-                                        <input type="text" placeholder="Sandbox Folder" id="Editor_Input_MappedFoldersOthers_0_SandboxFolder" oninput="javascript:Editor_MappedFoldersOthers_Oninput(0)" onfocusout="javascript:Editor_MappedFoldersOthers_Onfocusout(0)" />
+                                        <input type="text" data-i18n-placeholder="sandboxFolder" placeholder="Sandbox Folder" id="Editor_Input_MappedFoldersOthers_0_SandboxFolder" oninput="javascript:Editor_MappedFoldersOthers_Oninput(0)" onfocusout="javascript:Editor_MappedFoldersOthers_Onfocusout(0)" />
                                     </td>
                                 </tr>
                             </tbody>
                         </table>
                     </div>
-                    <h6>Tap once to enable read/write access, tap again to make it read-only.<br />If you do not specify a Sandbox folder, the folder will be mapped to Desktop in Sandbox by default.<br />Note: deselected folders will not appear in the configuration file generated.</h6>
+                    <h6 data-i18n="mappedFoldersOthersHint">Tap once to enable read/write access, tap again to make it read-only.<br />If you do not specify a Sandbox folder, the folder will be mapped to Desktop in Sandbox by default.<br />Note: deselected folders will not appear in the configuration file generated.</h6>
                 </td>
             </tr>
             <tr id="EditorRow_Security">
-                <td>Security</td>
+                <td data-i18n="security">Security</td>
                 <td>
                 	<input type="Checkbox" id="Editor_Input_ProtectedClient" />
                     <label for="Editor_Input_ProtectedClient">
                         <span class="Checkmark"></span>
-                        Enable Protected Client Mode
-                        <span class="h6span">Enable extra security mitigations to the RDP connection to Sandbox.</span>
+                        <span data-i18n="protectedClient">Enable Protected Client Mode</span>
+                        <span class="h6span" data-i18n="protectedClientDesc">Enable extra security mitigations to the RDP connection to Sandbox.</span>
                     </label>
                 </td>
             </tr>
             <tr id="EditorRow_LogonCommands">
-                <td>Logon Commands</td>
+                <td data-i18n="logonCommands">Logon Commands</td>
                 <td>
                     <textarea id="Editor_Input_LogonCommand"></textarea>
-                    <h6>Put one command on each line.  These commands will automatically be invoked as Sandbox user in the Sandbox after log-on.</h6>
+                    <h6 data-i18n="logonCommandsDesc">Put one command on each line. These commands will automatically be invoked as Sandbox user in the Sandbox after log-on.</h6>
                 </td>
             </tr>
             <tr id="EditorRow_Advanced">
-                <td>Advanced</td>
+                <td data-i18n="advanced">Advanced</td>
                 <td>
                 	<a href="javascript:Editor_ShowAdvancedSettings()" id="Editor_AdvancedSettingsLink">
-                		Show Advanced Settings
-                		<span class="h6span">Configure AutoSave and other settings relating to how WSBEditor behaves.</span>
+                		<span data-i18n="showAdvanced">Show Advanced Settings</span>
+                		<span class="h6span" data-i18n="showAdvancedDesc">Configure AutoSave and other settings relating to how WSBEditor behaves.</span>
                 	</a>
                 	<div id="Editor_AdvancedSettings" style="display:none">
 						<input type="Checkbox" id="Editor_Input_PreserveEditorSettings" class="PreservedInput" checked="checked" />
 						<label for="Editor_Input_PreserveEditorSettings">
 							<span class="Checkmark"></span>
-							Preserve Editor Settings
-							<span class="h6span">Preserve your WSBEditor settings (e.g. home directory path, recent folders, advanced settings) across sessions.  This setting itself ("Preserve Editor Settings") will be preserved in any event.</span>
+							<span data-i18n="preserveSettings">Preserve Editor Settings</span>
+							<span class="h6span" data-i18n="preserveSettingsDesc">Preserve your WSBEditor settings (e.g. home directory path, recent folders, advanced settings) across sessions. This setting itself ("Preserve Editor Settings") will be preserved in any event.</span>
 						</label>
 						<input type="Checkbox" id="Editor_Input_AutoSave" class="PreservedInput" checked="checked" />
 						<label for="Editor_Input_AutoSave">
 							<span class="Checkmark"></span>
-							Enable AutoSave
-							<span class="h6span">Automatically save the latest session to your browser. This allows you to resume your session when you open WSBEditor again, even if you do not download the configuration file. Disabling AutoSave will also delete any saved session.</span>
+							<span data-i18n="autoSave">Enable AutoSave</span>
+							<span class="h6span" data-i18n="autoSaveDesc">Automatically save the latest session to your browser. This allows you to resume your session when you open WSBEditor again, even if you do not download the configuration file. Disabling AutoSave will also delete any saved session.</span>
 						</label>
 						<input type="Checkbox" id="Editor_Input_EditorXML" class="PreservedInput" checked="checked" />
 						<label for="Editor_Input_EditorXML">
 							<span class="Checkmark"></span>
-							Include Editor Information
-							<span class="h6span">Generated file will include your selected template, home directory path and other information that can be loaded when you open the file with WSBEditor again.</span>
+							<span data-i18n="includeEditorInfo">Include Editor Information</span>
+							<span class="h6span" data-i18n="includeEditorInfoDesc">Generated file will include your selected template, home directory path and other information that can be loaded when you open the file with WSBEditor again.</span>
 						</label>
 					</div>
                 </td>
@@ -1348,69 +1678,69 @@
         <table class="Footer" id="Editor_Footer">
             <tr>
                 <td id="Editor_Footer_Message"></td>
-                <td><input type="button" onclick="javascript:ShowFloatBox('Open')" value="Open" /><input type="submit" value="Download" id="Editor_Footer_DownloadButton" /></td>
+                <td><input type="button" data-i18n="open" onclick="javascript:ShowFloatBox('Open')" value="Open" /><input type="submit" data-i18n="download" value="Download" id="Editor_Footer_DownloadButton" /></td>
             </tr>
         </table>
     </form>
     <div id="FloatBoxBackground" class="FloatBoxBackground"></div>
     <form id="FloatBox_Welcome" class="FloatBox BlueBorder" action="javascript:FloatBox_Welcome_Submit()">
-        <h2>Welcome to WSBEditor!</h2>
-        <p><b>WSBEditor</b> is a web-based <a href="https://docs.microsoft.com/en-us/windows/security/threat-protection/windows-sandbox/windows-sandbox-overview" target="_blank">Windows Sandbox</a> configuration file (*.wsb) editor.</p>
+        <h2 data-i18n="welcome">Welcome to WSBEditor!</h2>
+        <p data-i18n="welcomeDesc"><b>WSBEditor</b> is a web-based <a href="https://docs.microsoft.com/en-us/windows/security/threat-protection/windows-sandbox/windows-sandbox-overview" target="_blank">Windows Sandbox</a> configuration file (*.wsb) editor.</p>
         <input type="Checkbox" id="FloatBox_Welcome_Input_Resume" disabled="disabled" />
         <label for="FloatBox_Welcome_Input_Resume">
             <span class="Checkmark"></span>
-            Resume Last Session
-            <span class="h6span" id="FloatBox_Welcome_Input_Resume_Notes">No session available.</span>
+            <span data-i18n="resumeSession">Resume Last Session</span>
+            <span class="h6span" id="FloatBox_Welcome_Input_Resume_Notes" data-i18n="noSession">No session available.</span>
         </label>
-        <h6>This software comes with ABSOLUTELY NO WARRANTY.</h6>
-        <h6>By proceeding, you accept the <a href="https://www.gnu.org/licenses/gpl-3.0.txt" target="_blank">GNU General Public License</a>.</h6>
-        <h6>&copy; Copyright 2020 <a href="https://leesteve.tk/" target="_blank">Steve's Toolkit</a> (<a href="https://github.com/leestevetk/WSBEditor" target="_blank">GitHub</a>)</h6>
-        <noscript>You must enable JavaScript to continue.</noscript>
-        <p class="FloatBoxFooter"><input type="submit" value="Continue" id="FloatBox_Welcome_SubmitButton" disabled="disabled" /></p>
+        <h6 data-i18n="warranty">This software comes with ABSOLUTELY NO WARRANTY.</h6>
+        <h6 data-i18n="gpl">By proceeding, you accept the <a href="https://www.gnu.org/licenses/gpl-3.0.txt" target="_blank">GNU General Public License</a>.</h6>
+        <h6 data-i18n="copyright">&copy; Copyright 2020 <a href="https://leesteve.tk/" target="_blank">Steve's Toolkit</a> (<a href="https://github.com/leestevetk/WSBEditor" target="_blank">GitHub</a>)</h6>
+        <noscript data-i18n="noScript">You must enable JavaScript to continue.</noscript>
+        <p class="FloatBoxFooter"><input type="submit" data-i18n="continue" value="Continue" id="FloatBox_Welcome_SubmitButton" disabled="disabled" /></p>
     </form>
     <form id="FloatBox_Templates" class="FloatBox Hidden BlueBorder" action="javascript:FloatBox_Templates_Submit()">
-        <h2>Templates</h2>
+        <h2 data-i18n="templates">Templates</h2>
         <table class="RadioDescription">
             <tr>
                 <td>
                     <div class="RadioDescription_Content">
-                        <input type="radio" name="FloatBox_Templates_Template" class="TextRadio" id="FloatBox_Templates_Template_0" value="0" checked="checked" /><label for="FloatBox_Templates_Template_0">Windows Default</label>
-                        <input type="radio" name="FloatBox_Templates_Template" class="TextRadio" id="FloatBox_Templates_Template_1" value="1" /><label for="FloatBox_Templates_Template_1">More Secure<span class="h6span">(without Networking)</span></label>
-                        <input type="radio" name="FloatBox_Templates_Template" class="TextRadio" id="FloatBox_Templates_Template_2" value="2" /><label for="FloatBox_Templates_Template_2">More Secure<span class="h6span">(with Networking)</span></label>
-                        <input type="radio" name="FloatBox_Templates_Template" class="TextRadio" id="FloatBox_Templates_Template_3" value="3" /><label for="FloatBox_Templates_Template_3">More Functions</label>
-                        <input type="radio" name="FloatBox_Templates_Template" class="TextRadio" id="FloatBox_Templates_Template_4" value="4" /><label for="FloatBox_Templates_Template_4">Test Downloads</label>
+                        <input type="radio" name="FloatBox_Templates_Template" class="TextRadio" id="FloatBox_Templates_Template_0" value="0" checked="checked" /><label for="FloatBox_Templates_Template_0"><span data-i18n="templateWindowsDefault">Windows Default</span></label>
+                        <input type="radio" name="FloatBox_Templates_Template" class="TextRadio" id="FloatBox_Templates_Template_1" value="1" /><label for="FloatBox_Templates_Template_1"><span data-i18n="templateMoreSecureNoNet">More Secure</span><span class="h6span" data-i18n="templateMoreSecureNoNetSub">(without Networking)</span></label>
+                        <input type="radio" name="FloatBox_Templates_Template" class="TextRadio" id="FloatBox_Templates_Template_2" value="2" /><label for="FloatBox_Templates_Template_2"><span data-i18n="templateMoreSecureWithNet">More Secure</span><span class="h6span" data-i18n="templateMoreSecureWithNetSub">(with Networking)</span></label>
+                        <input type="radio" name="FloatBox_Templates_Template" class="TextRadio" id="FloatBox_Templates_Template_3" value="3" /><label for="FloatBox_Templates_Template_3"><span data-i18n="templateMoreFunctions">More Functions</span></label>
+                        <input type="radio" name="FloatBox_Templates_Template" class="TextRadio" id="FloatBox_Templates_Template_4" value="4" /><label for="FloatBox_Templates_Template_4"><span data-i18n="templateTestDownloads">Test Downloads</span></label>
                     </div>
                 </td>
                 <td>
                     <div class="RadioDescription_Content">
-                        <b>Description</b>
+                        <b data-i18n="description">Description</b>
                         <p id="FloatBox_Templates_Description"></p>
                     </div>
                 </td>
             </tr>
         </table>
-        <p class="FloatBoxFooter"><input type="submit" value="Apply" /><input type="button" onclick="javascript:FloatBox_Templates_Cancel()" value="Cancel" /></p>
+        <p class="FloatBoxFooter"><input type="submit" data-i18n="apply" value="Apply" /><input type="button" data-i18n="cancel" onclick="javascript:FloatBox_Templates_Cancel()" value="Cancel" /></p>
     </form>
     <form id="FloatBox_Reset" class="FloatBox Hidden YellowBorder" action="javascript:FloatBox_Reset_Submit()">
-        <h2>Reset to Template Defaults</h2>
-        <p>This will revert all changes and reset all settings to their default values in the <b id="FloatBox_Reset_TemplateName"></b> template.</p>
-        <h6>This will also empty your Mapped Folders (Others) list.</h6>
-        <p class="FloatBoxFooter"><input type="submit" value="Reset" /><input type="button" value="Cancel" onclick="javascript:HideFloatBox('Reset')" /></p>
+        <h2 data-i18n="resetTitle">Reset to Template Defaults</h2>
+        <p data-i18n="resetDesc">This will revert all changes and reset all settings to their default values in the <b id="FloatBox_Reset_TemplateName"></b> template.</p>
+        <h6 data-i18n="resetHint">This will also empty your Mapped Folders (Others) list.</h6>
+        <p class="FloatBoxFooter"><input type="submit" data-i18n="reset" value="Reset" /><input type="button" data-i18n="cancel" value="Cancel" onclick="javascript:HideFloatBox('Reset')" /></p>
     </form>
     <form id="FloatBox_Open" class="FloatBox Hidden BlueBorder" action="javascript:document.getElementById('FloatBox_Open_Input').click()">
-        <h2>Open Configuration File</h2>
-        <p><b>This will overwrite any changes you have made on this page.</b></p>
-        <h6>To keep your changes, <a href="javascript:DownloadFile()">download a copy</a>.</h6>
-        <h6>Choose your configuration file (*.wsb) to continue.</h6>
+        <h2 data-i18n="openFileTitle">Open Configuration File</h2>
+        <p data-i18n="openFileWarning"><b>This will overwrite any changes you have made on this page.</b></p>
+        <h6 data-i18n="openFileHint1">To keep your changes, <a href="javascript:DownloadFile()">download a copy</a>.</h6>
+        <h6 data-i18n="openFileHint2">Choose your configuration file (*.wsb) to continue.</h6>
         <input type="file" id="FloatBox_Open_Input" accept=".wsb" onchange="javascript:OpenWSBFile()" />
-        <p class="FloatBoxFooter"><input type="submit" value="Choose" /><input type="button" value="Cancel" onclick="javascript:HideFloatBox('Open')" /></p>
+        <p class="FloatBoxFooter"><input type="submit" data-i18n="choose" value="Choose" /><input type="button" data-i18n="cancel" value="Cancel" onclick="javascript:HideFloatBox('Open')" /></p>
     </form>
     <form id="FloatBox_OpenWSBWarnings" class="FloatBox Hidden YellowBorder" action="javascript:HideFloatBox('OpenWSBWarnings')">
-        <h2>File Warnings</h2>
-        <p>We encountered some warnings while opening <b id="FloatBox_OpenWSBWarnings_Filename"></b>:</p>
+        <h2 data-i18n="fileWarnings">File Warnings</h2>
+        <p data-i18n="fileWarningsDesc">We encountered some warnings while opening <b id="FloatBox_OpenWSBWarnings_Filename"></b>:</p>
         <div class="TableContainer"><table id="FloatBox_OpenWSBWarnings_Table"></table></div>
-        <h6>Other configuration options in the file have been loaded onto the editor.</h6>
-        <p class="FloatBoxFooter"><input type="submit" value="Continue" /></p>
+        <h6 data-i18n="fileWarningsHint">Other configuration options in the file have been loaded onto the editor.</h6>
+        <p class="FloatBoxFooter"><input type="submit" data-i18n="continue" value="Continue" /></p>
     </form>
     <div id="AlertList">
     </div>
