@@ -1,0 +1,24 @@
+<Configuration>
+    <vGPU>Enable</vGPU>
+    <Networking>Enable</Networking>
+    <ClipboardRedirection>Enable</ClipboardRedirection>
+    <MemoryInMB>4096</MemoryInMB>
+    <MappedFolders>
+        <MappedFolder>
+            <HostFolder>C:\Sandbox\Dev</HostFolder>
+            <SandboxFolder>C:\Users\WDAGUtilityAccount\Desktop\Dev</SandboxFolder>
+            <ReadOnly>false</ReadOnly>
+        </MappedFolder>
+    </MappedFolders>
+    <LogonCommand>
+        <Command>cmd /c echo Development Environment Ready!</Command>
+    </LogonCommand>
+    <WSBEditorConfig>
+        <EditorVersion>0.5.0</EditorVersion>
+        <EditorRelease>20260204</EditorRelease>
+        <TemplateID>3</TemplateID>
+        <DownloadTime>1770004923645</DownloadTime>
+        <HomeDirectory>C:\Sandbox</HomeDirectory>
+        <Language>zh</Language>
+    </WSBEditorConfig>
+</Configuration>

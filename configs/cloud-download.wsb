@@ -1,0 +1,32 @@
+<Configuration>
+    <vGPU>Enable</vGPU>
+    <Networking>Default</Networking>
+    <AudioInput>Disable</AudioInput>
+    <VideoInput>Disable</VideoInput>
+    <PrinterRedirection>Disable</PrinterRedirection>
+    <ClipboardRedirection>Default</ClipboardRedirection>
+    <ProtectedClient>Disable</ProtectedClient>
+    <MappedFolders>
+        <MappedFolder>
+            <HostFolder>\\192.168.0.1\share\downloads</HostFolder>
+            <SandboxFolder>C:\Users\WDAGUtilityAccount\Downloads</SandboxFolder>
+            <ReadOnly>false</ReadOnly>
+        </MappedFolder>
+        <MappedFolder>
+            <HostFolder>\\192.168.0.1\share\downloads</HostFolder>
+            <SandboxFolder>C:\baidunetdiskdownload</SandboxFolder>
+            <ReadOnly>false</ReadOnly>
+        </MappedFolder>
+    </MappedFolders>
+    <LogonCommand>
+        <Command>explorer.exe C:\Users\WDAGUtilityAccount\Downloads</Command>
+    </LogonCommand>
+    <WSBEditorConfig>
+        <EditorVersion>0.5.0</EditorVersion>
+        <EditorRelease>20260204</EditorRelease>
+        <TemplateID>0</TemplateID>
+        <DownloadTime>1770004923645</DownloadTime>
+        <HomeDirectory>\\192.168.0.1\share</HomeDirectory>
+        <Language>zh</Language>
+    </WSBEditorConfig>
+</Configuration>

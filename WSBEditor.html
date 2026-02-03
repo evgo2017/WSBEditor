@@ -1,11 +1,12 @@
 <!DOCTYPE HTML>
 <html lang="en">
+
 <head>
-<!--
-    WSBEditor 0.4.0 (20250203)
+    <!--
+    WSBEditor 0.5.0 (20250203)
     Copyright (C) 2020-2025 Steve's Toolkit
-    Website: http://leesteve.tk/WSBEditor/
-    GitHub: https://github.com/leestevetk/WSBEditor/
+    Website: http://evgo2017.com/WSBEditor/
+    GitHub: https://github.com/evgo2017/WSBEditor/
 
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -20,554 +21,1023 @@
     You should have received a copy of the GNU General Public License
     along with this program.  If not, see <https://www.gnu.org/licenses/>.
 -->
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<link rel="stylesheet" type="text/css" href="https://fonts.googleapis.com/css?family=Ubuntu">
-<title>WSBEditor by Steve's Toolkit</title>
-<script>
-    var CurrentTemplateID = 0;
-    var CurrentTemplateName, CurrentTemplateFilename = "";
-    var EditorVersion = "0.4.0";
-    var EditorRelease = 20250203;
-    var EditorInitiated = false;
-    var SandboxHomeDirectory = "C:\\Users\\WDAGUtilityAccount";
-    var CurrentLanguage = "en";
-    
-    // Multi-language Support
-    var Translations = {
-        "en": {
-            "title": "WSBEditor by Steve's Toolkit",
-            "filename": "Filename",
-            "template": "Template",
-            "change": "Change",
-            "reset": "Reset",
-            "graphics": "Graphics",
-            "enableVGpu": "Enable vGPU",
-            "enableVGpuDesc": "Enable hardware acceleration in Sandbox.",
-            "memory": "Memory",
-            "memoryUnit": "MB",
-            "memoryDesc": "Maximum Sandbox memory usage (actual memory usage may exceed this amount if needed to boot the Sandbox).",
-            "network": "Network",
-            "connectNetwork": "Connect Sandbox to Network",
-            "connectNetworkDesc": "Enable networking in Sandbox via Host's default NAT switch.",
-            "sharedResources": "Shared Resources",
-            "sharedResourcesDesc": "Sandbox will share Host's:",
-            "microphones": "Microphone(s)",
-            "cameras": "Camera(s)",
-            "printers": "Printer(s)",
-            "clipboard": "Clipboard",
-            "clipboardDesc": "Allow copy-and-paste between the Sandbox and the Host.<br />If <a href=\"#Editor_Input_ProtectedClient\">Protected Client</a> is also enabled, you can only copy-and-paste text (but not files).",
-            "mappedUserFolders": "Mapped User Folders",
-            "homeDirectory": "Home Directory:",
-            "homeDirectoryDesc": "By default, your Home Directory is \"C:\\Users\\{Your Username}\".<br />To check, open Command Prompt and type \"echo %userprofile%\" (<a href=\"https://github.com/leestevetk/WSBEditor/wiki/Home-Directory\" target=\"_blank\">learn more</a>).",
-            "desktop": "Desktop",
-            "downloads": "Downloads",
-            "documents": "Documents",
-            "pictures": "Pictures",
-            "music": "Music",
-            "mappedFoldersHint": "Tap once to enable read/write access, tap again to make it read-only.",
-            "mappedFoldersOthers": "Mapped Folders (Others)",
-            "hostFolder": "Host Folder",
-            "sandboxFolder": "Sandbox Folder",
-            "mappedFoldersOthersHint": "Tap once to enable read/write access, tap again to make it read-only.<br />If you do not specify a Sandbox folder, the folder will be mapped to Desktop in Sandbox by default.<br />Note: deselected folders will not appear in the configuration file generated.",
-            "security": "Security",
-            "protectedClient": "Enable Protected Client Mode",
-            "protectedClientDesc": "Enable extra security mitigations to the RDP connection to Sandbox.",
-            "logonCommands": "Logon Commands",
-            "logonCommandsDesc": "Put one command on each line. These commands will automatically be invoked as Sandbox user in the Sandbox after log-on.",
-            "advanced": "Advanced",
-            "showAdvanced": "Show Advanced Settings",
-            "showAdvancedDesc": "Configure AutoSave and other settings relating to how WSBEditor behaves.",
-            "preserveSettings": "Preserve Editor Settings",
-            "preserveSettingsDesc": "Preserve your WSBEditor settings (e.g. home directory path, recent folders, advanced settings) across sessions. This setting itself (\"Preserve Editor Settings\") will be preserved in any event.",
-            "autoSave": "Enable AutoSave",
-            "autoSaveDesc": "Automatically save the latest session to your browser. This allows you to resume your session when you open WSBEditor again, even if you do not download the configuration file. Disabling AutoSave will also delete any saved session.",
-            "includeEditorInfo": "Include Editor Information",
-            "includeEditorInfoDesc": "Generated file will include your selected template, home directory path and other information that can be loaded when you open the file with WSBEditor again.",
-            "open": "Open",
-            "download": "Download",
-            "welcome": "Welcome to WSBEditor!",
-            "welcomeDesc": "<b>WSBEditor</b> is a web-based <a href=\"https://docs.microsoft.com/en-us/windows/security/threat-protection/windows-sandbox/windows-sandbox-overview\" target=\"_blank\">Windows Sandbox</a> configuration file (*.wsb) editor.",
-            "resumeSession": "Resume Last Session",
-            "noSession": "No session available.",
-            "noSessionAutoSave": "No session available: AutoSave disabled.",
-            "warranty": "This software comes with ABSOLUTELY NO WARRANTY.",
-            "gpl": "By proceeding, you accept the <a href=\"https://www.gnu.org/licenses/gpl-3.0.txt\" target=\"_blank\">GNU General Public License</a>.",
-            "copyright": "&copy; Copyright 2020 <a href=\"https://leesteve.tk/\" target=\"_blank\">Steve's Toolkit</a> (<a href=\"https://github.com/leestevetk/WSBEditor\" target=\"_blank\">GitHub</a>)",
-            "continue": "Continue",
-            "templates": "Templates",
-            "description": "Description",
-            "apply": "Apply",
-            "cancel": "Cancel",
-            "templateWindowsDefault": "Windows Default",
-            "templateMoreSecureNoNet": "More Secure",
-            "templateMoreSecureNoNetSub": "(without Networking)",
-            "templateMoreSecureWithNet": "More Secure",
-            "templateMoreSecureWithNetSub": "(with Networking)",
-            "templateMoreFunctions": "More Functions",
-            "templateTestDownloads": "Test Downloads",
-            "templateDescDefault": "Uses Windows's default options.",
-            "templateDescSecureNoNet": "Enables all security options and disables all potentially unsafe functionalities. Networking functionalities are also disabled.",
-            "templateDescSecureWithNet": "Enables all security options and disables all potentially unsafe functionalities, but enables networking functionalities.",
-            "templateDescMoreFunctions": "Enables all available functions.",
-            "templateDescTestDownloads": "Allows you to test downloaded files/programs. This template shares the Host's Downloads folder with the Sandbox.",
-            "resetTitle": "Reset to Template Defaults",
-            "resetDesc": "This will revert all changes and reset all settings to their default values in the <b id=\"FloatBox_Reset_TemplateName\"></b> template.",
-            "resetHint": "This will also empty your Mapped Folders (Others) list.",
-            "openFileTitle": "Open Configuration File",
-            "openFileWarning": "<b>This will overwrite any changes you have made on this page.</b>",
-            "openFileHint1": "To keep your changes, <a href=\"javascript:DownloadFile()\">download a copy</a>.",
-            "openFileHint2": "Choose your configuration file (*.wsb) to continue.",
-            "choose": "Choose",
-            "fileWarnings": "File Warnings",
-            "fileWarningsDesc": "We encountered some warnings while opening <b id=\"FloatBox_OpenWSBWarnings_Filename\"></b>:",
-            "fileWarningsHint": "Other configuration options in the file have been loaded onto the editor.",
-            "placeholderAuto": "Auto",
-            "placeholderHomeDir": "Home Directory",
-            "placeholderRequired": "Required",
-            "readWrite": "Read/write",
-            "readOnly": "Read-only",
-            "disabled": "Disabled",
-            "invalidConfig": "<p><b>Invalid Configuration:</b> ",
-            "invalidConfigEnd": "<br />Please change your settings and try again.</p>",
-            "errorOpening": "<p><b>Error opening ",
-            "errorOpeningEnd": "</b> ",
-            "errorOpeningHint": "</p><p>Please check syntax in your file and try again.</p>",
-            "lastSessionCorrupted": "<p><b>Last session was not resumed because it was corrupted:</b> ",
-            "fileOpened": "<p><b>",
-            "fileOpenedEnd": "</b> has been successfully opened.</p>",
-            "warningsWhileOpening": "<p>There were warning(s) while opening <b>",
-            "warningsWhileOpeningEnd": "</b>.</p>",
-            "jsError": "<p><b>JavaScript Error:</b> ",
-            "jsErrorEnd": ".</p><p>Please try again. If the error persists, please refresh or <a href=\"https://github.com/leestevetk/WSBEditor/issues\" target=\"_blank\">report an issue</a>.</p>",
-            "homeDirectoryRequired": "Home Directory is required. ",
-            "selectLanguage": "Language",
-            "noScript": "You must enable JavaScript to continue."
-        },
-        "zh": {
-            "title": "WSBEditor - Steve's Toolkit",
-            "filename": "文件名",
-            "template": "模板",
-            "change": "更改",
-            "reset": "重置",
-            "graphics": "图形",
-            "enableVGpu": "启用 vGPU",
-            "enableVGpuDesc": "在沙盒中启用硬件加速。",
-            "memory": "内存",
-            "memoryUnit": "MB",
-            "memoryDesc": "沙盒最大内存使用量（如果启动沙盒需要，实际内存使用量可能会超过此数值）。",
-            "network": "网络",
-            "connectNetwork": "连接沙盒到网络",
-            "connectNetworkDesc": "通过主机的默认 NAT 交换机在沙盒中启用网络功能。",
-            "sharedResources": "共享资源",
-            "sharedResourcesDesc": "沙盒将共享主机的：",
-            "microphones": "麦克风",
-            "cameras": "摄像头",
-            "printers": "打印机",
-            "clipboard": "剪贴板",
-            "clipboardDesc": "允许在沙盒和主机之间复制粘贴。<br />如果同时启用了<a href=\"#Editor_Input_ProtectedClient\">受保护客户端</a>，则只能复制粘贴文本（不能复制粘贴文件）。",
-            "mappedUserFolders": "映射的用户文件夹",
-            "homeDirectory": "主目录：",
-            "homeDirectoryDesc": "默认情况下，您的主目录是 \"C:\\Users\\{您的用户名}\".<br />要查看，请打开命令提示符并输入 \"echo %userprofile%\" (<a href=\"https://github.com/leestevetk/WSBEditor/wiki/Home-Directory\" target=\"_blank\">了解更多</a>).",
-            "desktop": "桌面",
-            "downloads": "下载",
-            "documents": "文档",
-            "pictures": "图片",
-            "music": "音乐",
-            "mappedFoldersHint": "点击一次启用读写访问，再次点击设为只读。",
-            "mappedFoldersOthers": "映射的其他文件夹",
-            "hostFolder": "主机文件夹",
-            "sandboxFolder": "沙盒文件夹",
-            "mappedFoldersOthersHint": "点击一次启用读写访问，再次点击设为只读。<br />如果您未指定沙盒文件夹，该文件夹默认将映射到沙盒的桌面。<br />注意：未选中的文件夹不会出现在生成的配置文件中。",
-            "security": "安全",
-            "protectedClient": "启用受保护客户端模式",
-            "protectedClientDesc": "为到沙盒的 RDP 连接启用额外的安全缓解措施。",
-            "logonCommands": "登录命令",
-            "logonCommandsDesc": "每行输入一个命令。这些命令将在登录后自动以沙盒用户身份在沙盒中调用。",
-            "advanced": "高级",
-            "showAdvanced": "显示高级设置",
-            "showAdvancedDesc": "配置自动保存和其他与 WSBEditor 行为相关的设置。",
-            "preserveSettings": "保留编辑器设置",
-            "preserveSettingsDesc": "在会话之间保留您的 WSBEditor 设置（例如主目录路径、最近的文件夹、高级设置）。此设置本身（\"保留编辑器设置\"）无论如何都会被保留。",
-            "autoSave": "启用自动保存",
-            "autoSaveDesc": "自动将最新会话保存到您的浏览器。这使您可以在再次打开 WSBEditor 时恢复会话，即使您没有下载配置文件。禁用自动保存也会删除任何已保存的会话。",
-            "includeEditorInfo": "包含编辑器信息",
-            "includeEditorInfoDesc": "生成的文件将包含您选择的模板、主目录路径和其他信息，当您再次使用 WSBEditor 打开该文件时可以加载这些信息。",
-            "open": "打开",
-            "download": "下载",
-            "welcome": "欢迎使用 WSBEditor！",
-            "welcomeDesc": "<b>WSBEditor</b> 是一个基于 Web 的 <a href=\"https://docs.microsoft.com/en-us/windows/security/threat-protection/windows-sandbox/windows-sandbox-overview\" target=\"_blank\">Windows 沙盒</a> 配置文件 (*.wsb) 编辑器。",
-            "resumeSession": "恢复上次会话",
-            "noSession": "没有可用会话。",
-            "noSessionAutoSave": "没有可用会话：自动保存已禁用。",
-            "warranty": "本软件不提供任何担保。",
-            "gpl": "继续即表示您接受 <a href=\"https://www.gnu.org/licenses/gpl-3.0.txt\" target=\"_blank\">GNU 通用公共许可证</a>。",
-            "copyright": "&copy; 版权所有 2020 <a href=\"https://leesteve.tk/\" target=\"_blank\">Steve's Toolkit</a> (<a href=\"https://github.com/leestevetk/WSBEditor\" target=\"_blank\">GitHub</a>)",
-            "continue": "继续",
-            "templates": "模板",
-            "description": "描述",
-            "apply": "应用",
-            "cancel": "取消",
-            "templateWindowsDefault": "Windows 默认",
-            "templateMoreSecureNoNet": "更安全",
-            "templateMoreSecureNoNetSub": "（无网络）",
-            "templateMoreSecureWithNet": "更安全",
-            "templateMoreSecureWithNetSub": "（有网络）",
-            "templateMoreFunctions": "更多功能",
-            "templateTestDownloads": "测试下载",
-            "templateDescDefault": "使用 Windows 的默认选项。",
-            "templateDescSecureNoNet": "启用所有安全选项并禁用所有潜在不安全的功 ​​ 能。网络功能也被禁用。",
-            "templateDescSecureWithNet": "启用所有安全选项并禁用所有潜在不安全的功 ​​ 能，但启用网络功能。",
-            "templateDescMoreFunctions": "启用所有可用功能。",
-            "templateDescTestDownloads": "允许您测试下载的文件/程序。此模板与沙盒共享主机的下载文件夹。",
-            "resetTitle": "重置为模板默认值",
-            "resetDesc": "这将恢复所有更改并将所有设置重置为 <b id=\"FloatBox_Reset_TemplateName\"></b> 模板的默认值。",
-            "resetHint": "这也将清空您的映射文件夹（其他）列表。",
-            "openFileTitle": "打开配置文件",
-            "openFileWarning": "<b>这将覆盖您在此页面上所做的任何更改。</b>",
-            "openFileHint1": "要保留您的更改，请<a href=\"javascript:DownloadFile()\">下载副本</a>。",
-            "openFileHint2": "选择您的配置文件 (*.wsb) 以继续。",
-            "choose": "选择",
-            "fileWarnings": "文件警告",
-            "fileWarningsDesc": "我们在打开 <b id=\"FloatBox_OpenWSBWarnings_Filename\"></b> 时遇到了一些警告：",
-            "fileWarningsHint": "文件中的其他配置选项已加载到编辑器中。",
-            "placeholderAuto": "自动",
-            "placeholderHomeDir": "主目录",
-            "placeholderRequired": "必填",
-            "readWrite": "读写",
-            "readOnly": "只读",
-            "disabled": "禁用",
-            "invalidConfig": "<p><b>配置无效：</b> ",
-            "invalidConfigEnd": "<br />请更改您的设置并重试。</p>",
-            "errorOpening": "<p><b>打开时出错 ",
-            "errorOpeningEnd": "</b> ",
-            "errorOpeningHint": "</p><p>请检查文件中的语法并重试。</p>",
-            "lastSessionCorrupted": "<p><b>上次会话未恢复，因为它已损坏：</b> ",
-            "fileOpened": "<p><b>",
-            "fileOpenedEnd": "</b> 已成功打开。</p>",
-            "warningsWhileOpening": "<p>打开 <b>",
-            "warningsWhileOpeningEnd": "</b> 时出现警告。</p>",
-            "jsError": "<p><b>JavaScript 错误：</b> ",
-            "jsErrorEnd": ".</p><p>请重试。如果错误仍然存在，请刷新或<a href=\"https://github.com/leestevetk/WSBEditor/issues\" target=\"_blank\">报告问题</a>。</p>",
-            "homeDirectoryRequired": "主目录是必需的。 ",
-            "selectLanguage": "语言",
-            "noScript": "您必须启用 JavaScript 才能继续。"
-        }
-    };
-    
-    function t(key) {
-        var lang = Translations[CurrentLanguage] || Translations["en"];
-        return lang[key] || Translations["en"][key] || key;
-    }
-    
-    function setLanguage(lang) {
-        CurrentLanguage = lang;
-        localStorage.setItem("WSBEditor_Language", lang);
-        document.documentElement.lang = lang === "zh" ? "zh-CN" : "en";
-        applyTranslations();
-    }
-    
-    function applyTranslations() {
-        // Update title
-        document.title = t("title");
-        
-        // Update all elements with data-i18n attribute
-        var elements = document.querySelectorAll("[data-i18n]");
-        for (var i = 0; i < elements.length; i++) {
-            var el = elements[i];
-            var key = el.getAttribute("data-i18n");
-            var translation = t(key);
-            if (el.tagName === "INPUT" && (el.type === "button" || el.type === "submit")) {
-                el.value = translation;
-            } else if (el.tagName === "INPUT" && el.type === "text") {
-                el.placeholder = translation;
-            } else {
-                el.innerHTML = translation;
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" type="text/css" href="https://fonts.googleapis.com/css?family=Ubuntu">
+    <title>WSBEditor by Steve's Toolkit</title>
+    <script>
+        var CurrentTemplateID = 0;
+        var CurrentTemplateName, CurrentTemplateFilename = "";
+        var EditorVersion = "0.5.0";
+        var EditorRelease = 20250203;
+        var EditorInitiated = false;
+        var SandboxHomeDirectory = "C:\\Users\\WDAGUtilityAccount";
+        var CurrentLanguage = "en";
+        var QuickConfigs = []; // Store loaded quick configs
+
+        // Multi-language Support
+        var Translations = {
+            "en": {
+                "title": "WSBEditor by Steve's Toolkit",
+                "filename": "Filename",
+                "template": "Template",
+                "change": "Change",
+                "reset": "Reset",
+                "graphics": "Graphics",
+                "enableVGpu": "Enable vGPU",
+                "enableVGpuDesc": "Enable hardware acceleration in Sandbox.",
+                "memory": "Memory",
+                "memoryUnit": "MB",
+                "memoryDesc": "Maximum Sandbox memory usage (actual memory usage may exceed this amount if needed to boot the Sandbox).",
+                "network": "Network",
+                "connectNetwork": "Connect Sandbox to Network",
+                "connectNetworkDesc": "Enable networking in Sandbox via Host's default NAT switch.",
+                "sharedResources": "Shared Resources",
+                "sharedResourcesDesc": "Sandbox will share Host's:",
+                "microphones": "Microphone(s)",
+                "cameras": "Camera(s)",
+                "printers": "Printer(s)",
+                "clipboard": "Clipboard",
+                "clipboardDesc": "Allow copy-and-paste between the Sandbox and the Host.<br />If <a href=\"#Editor_Input_ProtectedClient\">Protected Client</a> is also enabled, you can only copy-and-paste text (but not files).",
+                "mappedUserFolders": "Mapped User Folders",
+                "homeDirectory": "Home Directory:",
+                "homeDirectoryDesc": "By default, your Home Directory is \"C:\\Users\\{Your Username}\".<br />To check, open Command Prompt and type \"echo %userprofile%\" (<a href=\"https://github.com/leestevetk/WSBEditor/wiki/Home-Directory\" target=\"_blank\">learn more</a>).",
+                "desktop": "Desktop",
+                "downloads": "Downloads",
+                "documents": "Documents",
+                "pictures": "Pictures",
+                "music": "Music",
+                "mappedFoldersHint": "Tap once to enable read/write access, tap again to make it read-only.",
+                "mappedFoldersOthers": "Mapped Folders (Others)",
+                "hostFolder": "Host Folder",
+                "sandboxFolder": "Sandbox Folder",
+                "mappedFoldersOthersHint": "Tap once to enable read/write access, tap again to make it read-only.<br />If you do not specify a Sandbox folder, the folder will be mapped to Desktop in Sandbox by default.<br />Note: deselected folders will not appear in the configuration file generated.",
+                "security": "Security",
+                "protectedClient": "Enable Protected Client Mode",
+                "protectedClientDesc": "Enable extra security mitigations to the RDP connection to Sandbox.",
+                "logonCommands": "Logon Commands",
+                "logonCommandsDesc": "Put one command on each line. These commands will automatically be invoked as Sandbox user in the Sandbox after log-on.",
+                "advanced": "Advanced",
+                "showAdvanced": "Show Advanced Settings",
+                "showAdvancedDesc": "Configure AutoSave and other settings relating to how WSBEditor behaves.",
+                "preserveSettings": "Preserve Editor Settings",
+                "preserveSettingsDesc": "Preserve your WSBEditor settings (e.g. home directory path, recent folders, advanced settings) across sessions. This setting itself (\"Preserve Editor Settings\") will be preserved in any event.",
+                "autoSave": "Enable AutoSave",
+                "autoSaveDesc": "Automatically save the latest session to your browser. This allows you to resume your session when you open WSBEditor again, even if you do not download the configuration file. Disabling AutoSave will also delete any saved session.",
+                "includeEditorInfo": "Include Editor Information",
+                "includeEditorInfoDesc": "Generated file will include your selected template, home directory path and other information that can be loaded when you open the file with WSBEditor again.",
+                "open": "Open",
+                "download": "Download",
+                "welcome": "Welcome to WSBEditor!",
+                "welcomeDesc": "<b>WSBEditor</b> is a web-based <a href=\"https://docs.microsoft.com/en-us/windows/security/threat-protection/windows-sandbox/windows-sandbox-overview\" target=\"_blank\">Windows Sandbox</a> configuration file (*.wsb) editor.",
+                "resumeSession": "Resume Last Session",
+                "noSession": "No session available.",
+                "noSessionAutoSave": "No session available: AutoSave disabled.",
+                "warranty": "This software comes with ABSOLUTELY NO WARRANTY.",
+                "gpl": "By proceeding, you accept the <a href=\"https://www.gnu.org/licenses/gpl-3.0.txt\" target=\"_blank\">GNU General Public License</a>.",
+                "copyright": "&copy; Copyright 2020 <a href=\"https://leesteve.tk/\" target=\"_blank\">Steve's Toolkit</a> (<a href=\"https://github.com/leestevetk/WSBEditor\" target=\"_blank\">GitHub</a>)",
+                "continue": "Continue",
+                "templates": "Templates",
+                "description": "Description",
+                "apply": "Apply",
+                "cancel": "Cancel",
+                "templateWindowsDefault": "Windows Default",
+                "templateMoreSecureNoNet": "More Secure",
+                "templateMoreSecureNoNetSub": "(without Networking)",
+                "templateMoreSecureWithNet": "More Secure",
+                "templateMoreSecureWithNetSub": "(with Networking)",
+                "templateMoreFunctions": "More Functions",
+                "templateTestDownloads": "Test Downloads",
+                "templateDescDefault": "Uses Windows's default options.",
+                "templateDescSecureNoNet": "Enables all security options and disables all potentially unsafe functionalities. Networking functionalities are also disabled.",
+                "templateDescSecureWithNet": "Enables all security options and disables all potentially unsafe functionalities, but enables networking functionalities.",
+                "templateDescMoreFunctions": "Enables all available functions.",
+                "templateDescTestDownloads": "Allows you to test downloaded files/programs. This template shares the Host's Downloads folder with the Sandbox.",
+                "resetTitle": "Reset to Template Defaults",
+                "resetDesc": "This will revert all changes and reset all settings to their default values in the <b id=\"FloatBox_Reset_TemplateName\"></b> template.",
+                "resetHint": "This will also empty your Mapped Folders (Others) list.",
+                "openFileTitle": "Open Configuration File",
+                "openFileWarning": "<b>This will overwrite any changes you have made on this page.</b>",
+                "openFileHint1": "To keep your changes, <a href=\"javascript:DownloadFile()\">download a copy</a>.",
+                "openFileHint2": "Choose your configuration file (*.wsb) to continue.",
+                "choose": "Choose",
+                "fileWarnings": "File Warnings",
+                "fileWarningsDesc": "We encountered some warnings while opening <b id=\"FloatBox_OpenWSBWarnings_Filename\"></b>:",
+                "fileWarningsHint": "Other configuration options in the file have been loaded onto the editor.",
+                "placeholderAuto": "Auto",
+                "placeholderHomeDir": "Home Directory",
+                "placeholderRequired": "Required",
+                "readWrite": "Read/write",
+                "readOnly": "Read-only",
+                "disabled": "Disabled",
+                "invalidConfig": "<p><b>Invalid Configuration:</b> ",
+                "invalidConfigEnd": "<br />Please change your settings and try again.</p>",
+                "errorOpening": "<p><b>Error opening ",
+                "errorOpeningEnd": "</b> ",
+                "errorOpeningHint": "</p><p>Please check syntax in your file and try again.</p>",
+                "lastSessionCorrupted": "<p><b>Last session was not resumed because it was corrupted:</b> ",
+                "fileOpened": "<p><b>",
+                "fileOpenedEnd": "</b> has been successfully opened.</p>",
+                "warningsWhileOpening": "<p>There were warning(s) while opening <b>",
+                "warningsWhileOpeningEnd": "</b>.</p>",
+                "jsError": "<p><b>JavaScript Error:</b> ",
+                "jsErrorEnd": ".</p><p>Please try again. If the error persists, please refresh or <a href=\"https://github.com/leestevetk/WSBEditor/issues\" target=\"_blank\">report an issue</a>.</p>",
+                "homeDirectoryRequired": "Home Directory is required. ",
+                "selectLanguage": "Language",
+                "noScript": "You must enable JavaScript to continue.",
+                "quickConfigs": "Quick Configs",
+                "quickConfigsDesc": "Click to quickly load a configuration",
+                "loadedConfig": "<p><b>Configuration loaded:</b> ",
+                "loadConfigError": "<p><b>Error loading configuration:</b> "
+            },
+            "zh": {
+                "title": "WSBEditor - Steve's Toolkit",
+                "filename": "文件名",
+                "template": "模板",
+                "change": "更改",
+                "reset": "重置",
+                "graphics": "图形",
+                "enableVGpu": "启用 vGPU",
+                "enableVGpuDesc": "在沙盒中启用硬件加速。",
+                "memory": "内存",
+                "memoryUnit": "MB",
+                "memoryDesc": "沙盒最大内存使用量（如果启动沙盒需要，实际内存使用量可能会超过此数值）。",
+                "network": "网络",
+                "connectNetwork": "连接沙盒到网络",
+                "connectNetworkDesc": "通过主机的默认 NAT 交换机在沙盒中启用网络功能。",
+                "sharedResources": "共享资源",
+                "sharedResourcesDesc": "沙盒将共享主机的：",
+                "microphones": "麦克风",
+                "cameras": "摄像头",
+                "printers": "打印机",
+                "clipboard": "剪贴板",
+                "clipboardDesc": "允许在沙盒和主机之间复制粘贴。<br />如果同时启用了<a href=\"#Editor_Input_ProtectedClient\">受保护客户端</a>，则只能复制粘贴文本（不能复制粘贴文件）。",
+                "mappedUserFolders": "映射的用户文件夹",
+                "homeDirectory": "主目录：",
+                "homeDirectoryDesc": "默认情况下，您的主目录是 \"C:\\Users\\{您的用户名}\".<br />要查看，请打开命令提示符并输入 \"echo %userprofile%\" (<a href=\"https://github.com/leestevetk/WSBEditor/wiki/Home-Directory\" target=\"_blank\">了解更多</a>).",
+                "desktop": "桌面",
+                "downloads": "下载",
+                "documents": "文档",
+                "pictures": "图片",
+                "music": "音乐",
+                "mappedFoldersHint": "点击一次启用读写访问，再次点击设为只读。",
+                "mappedFoldersOthers": "映射的其他文件夹",
+                "hostFolder": "主机文件夹",
+                "sandboxFolder": "沙盒文件夹",
+                "mappedFoldersOthersHint": "点击一次启用读写访问，再次点击设为只读。<br />如果您未指定沙盒文件夹，该文件夹默认将映射到沙盒的桌面。<br />注意：未选中的文件夹不会出现在生成的配置文件中。",
+                "security": "安全",
+                "protectedClient": "启用受保护客户端模式",
+                "protectedClientDesc": "为到沙盒的 RDP 连接启用额外的安全缓解措施。",
+                "logonCommands": "登录命令",
+                "logonCommandsDesc": "每行输入一个命令。这些命令将在登录后自动以沙盒用户身份在沙盒中调用。",
+                "advanced": "高级",
+                "showAdvanced": "显示高级设置",
+                "showAdvancedDesc": "配置自动保存和其他与 WSBEditor 行为相关的设置。",
+                "preserveSettings": "保留编辑器设置",
+                "preserveSettingsDesc": "在会话之间保留您的 WSBEditor 设置（例如主目录路径、最近的文件夹、高级设置）。此设置本身（\"保留编辑器设置\"）无论如何都会被保留。",
+                "autoSave": "启用自动保存",
+                "autoSaveDesc": "自动将最新会话保存到您的浏览器。这使您可以在再次打开 WSBEditor 时恢复会话，即使您没有下载配置文件。禁用自动保存也会删除任何已保存的会话。",
+                "includeEditorInfo": "包含编辑器信息",
+                "includeEditorInfoDesc": "生成的文件将包含您选择的模板、主目录路径和其他信息，当您再次使用 WSBEditor 打开该文件时可以加载这些信息。",
+                "open": "打开",
+                "download": "下载",
+                "welcome": "欢迎使用 WSBEditor！",
+                "welcomeDesc": "<b>WSBEditor</b> 是一个基于 Web 的 <a href=\"https://docs.microsoft.com/en-us/windows/security/threat-protection/windows-sandbox/windows-sandbox-overview\" target=\"_blank\">Windows 沙盒</a> 配置文件 (*.wsb) 编辑器。",
+                "resumeSession": "恢复上次会话",
+                "noSession": "没有可用会话。",
+                "noSessionAutoSave": "没有可用会话：自动保存已禁用。",
+                "warranty": "本软件不提供任何担保。",
+                "gpl": "继续即表示您接受 <a href=\"https://www.gnu.org/licenses/gpl-3.0.txt\" target=\"_blank\">GNU 通用公共许可证</a>。",
+                "copyright": "&copy; 版权所有 2020 <a href=\"https://leesteve.tk/\" target=\"_blank\">Steve's Toolkit</a> (<a href=\"https://github.com/leestevetk/WSBEditor\" target=\"_blank\">GitHub</a>)",
+                "continue": "继续",
+                "templates": "模板",
+                "description": "描述",
+                "apply": "应用",
+                "cancel": "取消",
+                "templateWindowsDefault": "Windows 默认",
+                "templateMoreSecureNoNet": "更安全",
+                "templateMoreSecureNoNetSub": "（无网络）",
+                "templateMoreSecureWithNet": "更安全",
+                "templateMoreSecureWithNetSub": "（有网络）",
+                "templateMoreFunctions": "更多功能",
+                "templateTestDownloads": "测试下载",
+                "templateDescDefault": "使用 Windows 的默认选项。",
+                "templateDescSecureNoNet": "启用所有安全选项并禁用所有潜在不安全的功 ​​ 能。网络功能也被禁用。",
+                "templateDescSecureWithNet": "启用所有安全选项并禁用所有潜在不安全的功 ​​ 能，但启用网络功能。",
+                "templateDescMoreFunctions": "启用所有可用功能。",
+                "templateDescTestDownloads": "允许您测试下载的文件/程序。此模板与沙盒共享主机的下载文件夹。",
+                "resetTitle": "重置为模板默认值",
+                "resetDesc": "这将恢复所有更改并将所有设置重置为 <b id=\"FloatBox_Reset_TemplateName\"></b> 模板的默认值。",
+                "resetHint": "这也将清空您的映射文件夹（其他）列表。",
+                "openFileTitle": "打开配置文件",
+                "openFileWarning": "<b>这将覆盖您在此页面上所做的任何更改。</b>",
+                "openFileHint1": "要保留您的更改，请<a href=\"javascript:DownloadFile()\">下载副本</a>。",
+                "openFileHint2": "选择您的配置文件 (*.wsb) 以继续。",
+                "choose": "选择",
+                "fileWarnings": "文件警告",
+                "fileWarningsDesc": "我们在打开 <b id=\"FloatBox_OpenWSBWarnings_Filename\"></b> 时遇到了一些警告：",
+                "fileWarningsHint": "文件中的其他配置选项已加载到编辑器中。",
+                "placeholderAuto": "自动",
+                "placeholderHomeDir": "主目录",
+                "placeholderRequired": "必填",
+                "readWrite": "读写",
+                "readOnly": "只读",
+                "disabled": "禁用",
+                "invalidConfig": "<p><b>配置无效：</b> ",
+                "invalidConfigEnd": "<br />请更改您的设置并重试。</p>",
+                "errorOpening": "<p><b>打开时出错 ",
+                "errorOpeningEnd": "</b> ",
+                "errorOpeningHint": "</p><p>请检查文件中的语法并重试。</p>",
+                "lastSessionCorrupted": "<p><b>上次会话未恢复，因为它已损坏：</b> ",
+                "fileOpened": "<p><b>",
+                "fileOpenedEnd": "</b> 已成功打开。</p>",
+                "warningsWhileOpening": "<p>打开 <b>",
+                "warningsWhileOpeningEnd": "</b> 时出现警告。</p>",
+                "jsError": "<p><b>JavaScript 错误：</b> ",
+                "jsErrorEnd": ".</p><p>请重试。如果错误仍然存在，请刷新或<a href=\"https://github.com/leestevetk/WSBEditor/issues\" target=\"_blank\">报告问题</a>。</p>",
+                "homeDirectoryRequired": "主目录是必需的。 ",
+                "selectLanguage": "语言",
+                "noScript": "您必须启用 JavaScript 才能继续。",
+                "quickConfigs": "常用配置",
+                "quickConfigsDesc": "点击快速加载配置",
+                "loadedConfig": "<p><b>配置已加载：</b> ",
+                "loadConfigError": "<p><b>加载配置时出错：</b> "
             }
-        }
-        
-        // Update placeholders
-        var placeholders = document.querySelectorAll("[data-i18n-placeholder]");
-        for (var i = 0; i < placeholders.length; i++) {
-            var el = placeholders[i];
-            var key = el.getAttribute("data-i18n-placeholder");
-            el.placeholder = t(key);
-        }
-        
-        // Update template name
-        updateTemplateDisplay();
-        
-        // Update tristate labels
-        updateTristateLabels();
-    }
-    
-    function updateTemplateDisplay() {
-        var templateNames = {
-            0: t("templateWindowsDefault"),
-            1: t("templateMoreSecureNoNet"),
-            2: t("templateMoreSecureWithNet"),
-            3: t("templateMoreFunctions"),
-            4: t("templateTestDownloads")
         };
-        if (CurrentTemplateID !== undefined && templateNames[CurrentTemplateID]) {
-            document.getElementById('Editor_TemplateName').innerHTML = templateNames[CurrentTemplateID];
-            if (document.getElementById('FloatBox_Reset_TemplateName')) {
-                document.getElementById('FloatBox_Reset_TemplateName').innerHTML = templateNames[CurrentTemplateID];
+
+        function t(key) {
+            var lang = Translations[CurrentLanguage] || Translations["en"];
+            return lang[key] || Translations["en"][key] || key;
+        }
+
+        function setLanguage(lang) {
+            CurrentLanguage = lang;
+            localStorage.setItem("WSBEditor_Language", lang);
+            document.documentElement.lang = lang === "zh" ? "zh-CN" : "en";
+            applyTranslations();
+            renderQuickConfigs();
+        }
+
+        function applyTranslations() {
+            document.title = t("title");
+            var elements = document.querySelectorAll("[data-i18n]");
+            for (var i = 0; i < elements.length; i++) {
+                var el = elements[i];
+                var key = el.getAttribute("data-i18n");
+                var translation = t(key);
+                if (el.tagName === "INPUT" && (el.type === "button" || el.type === "submit")) {
+                    el.value = translation;
+                } else if (el.tagName === "INPUT" && el.type === "text") {
+                    el.placeholder = translation;
+                } else {
+                    el.innerHTML = translation;
+                }
+            }
+            var placeholders = document.querySelectorAll("[data-i18n-placeholder]");
+            for (var i = 0; i < placeholders.length; i++) {
+                var el = placeholders[i];
+                var key = el.getAttribute("data-i18n-placeholder");
+                el.placeholder = t(key);
+            }
+            updateTemplateDisplay();
+            updateTristateLabels();
+        }
+
+        function updateTemplateDisplay() {
+            var templateNames = {
+                0: t("templateWindowsDefault"),
+                1: t("templateMoreSecureNoNet"),
+                2: t("templateMoreSecureWithNet"),
+                3: t("templateMoreFunctions"),
+                4: t("templateTestDownloads")
+            };
+            if (CurrentTemplateID !== undefined && templateNames[CurrentTemplateID]) {
+                document.getElementById('Editor_TemplateName').innerHTML = templateNames[CurrentTemplateID];
+                if (document.getElementById('FloatBox_Reset_TemplateName')) {
+                    document.getElementById('FloatBox_Reset_TemplateName').innerHTML = templateNames[CurrentTemplateID];
+                }
             }
         }
-    }
-    
-    function updateTristateLabels() {
-        var labels = { 0: t("disabled"), 1: t("readWrite"), 2: t("readOnly") };
-        for (var key in Tristate_Status) {
-            var status = Tristate_Status[key];
-            var notesEl = document.getElementById(key + '_Notes');
-            if (notesEl) {
-                notesEl.innerHTML = labels[status];
+
+        function updateTristateLabels() {
+            var labels = { 0: t("disabled"), 1: t("readWrite"), 2: t("readOnly") };
+            for (var key in Tristate_Status) {
+                var status = Tristate_Status[key];
+                var notesEl = document.getElementById(key + '_Notes');
+                if (notesEl) {
+                    notesEl.innerHTML = labels[status];
+                }
             }
         }
-    }
-    
-    // Editor Handlers
-    function Editor_Onchange() {
-        var ErrorMsg = new Array();
-    	function IndicateErrRow(RowID) {
-    		document.getElementById('EditorRow_'+RowID).setAttribute("class", "EditorRowErr");
-    	}
-    	// Remove ErrRow Indications
-        var EditorRows = document.getElementById('Editor').getElementsByTagName("tr");
-        for(i = 0; i < EditorRows.length; i++) {
-        	EditorRows[i].setAttribute("class","");
-        }
-        // Check Filename
-        var Filename = document.getElementById('Editor_Input_Filename').value;
-        if(Filename == "") {
-        	document.getElementById('Editor_Input_Filename').value = CurrentTemplateFilename;
-        } else {
-        	if(Filename.toUpperCase().endsWith(".WSB") == false) {
-        		document.getElementById('Editor_Input_Filename').value = Filename+".wsb";
-        	}
-        }
-        // Check Mapped User Folders
-        if(document.querySelectorAll("input[name=Editor_Input_MappedUserFolders]:checked,input[name=Editor_Input_MappedUserFolders]:indeterminate").length > 0) {
-            document.getElementById('Editor_Input_HomeDirectory').required = true;
-            document.getElementById('Editor_Input_HomeDirectory').setAttribute("placeholder",t("placeholderRequired"));
-            var HomeDirectoryPath = document.getElementById('Editor_Input_HomeDirectory').value;
-            if(HomeDirectoryPath == "") {
-                ErrorMsg = t("homeDirectoryRequired");
-                IndicateErrRow("MappedUserFolders");
-            } else {
+
+        // Embedded default configs (used when fetch fails or for file:// protocol)
+        var EmbeddedConfigs = {
+            "configs": [
+                {
+                    "id": "last_session",
+                    "type": "special",
+                    "name": { "en": "Resume Last Session", "zh": "恢复上次会话" },
+                    "description": { "en": "Continue from where you left off", "zh": "从上次离开的地方继续" },
+                    "icon": "🕐"
+                },
+                {
+                    "id": "sandbox_local",
+                    "type": "file",
+                    "name": { "en": "Local NAS Share", "zh": "本地 NAS 共享" },
+                    "description": { "en": "Map network share to Sandbox (downloads folder)", "zh": "将网络共享映射到沙盒（下载文件夹）" },
+                    "icon": "💾",
+                    "file": "configs/Sandbox.wsb",
+                    "embeddedKey": "SandboxWSB"
+                },
+                {
+                    "id": "readonly_share",
+                    "type": "file",
+                    "name": { "en": "Read-only Share", "zh": "只读共享" },
+                    "description": { "en": "Secure read-only folder sharing for document review", "zh": "安全的只读文件夹共享，用于文档审阅" },
+                    "icon": "🔒",
+                    "file": "configs/readonly-share.wsb",
+                    "embeddedKey": "ReadonlyShareWSB"
+                },
+                {
+                    "id": "dev_test",
+                    "type": "file",
+                    "name": { "en": "Dev Test Environment", "zh": "开发测试环境" },
+                    "description": { "en": "vGPU + Network + Clipboard, 4GB RAM for software testing", "zh": "vGPU + 网络 + 剪贴板，4GB 内存用于软件测试" },
+                    "icon": "🔧",
+                    "file": "configs/dev-test.wsb",
+                    "embeddedKey": "DevTestWSB"
+                },
+                {
+                    "id": "isolated",
+                    "type": "file",
+                    "name": { "en": "Isolated Mode", "zh": "完全隔离模式" },
+                    "description": { "en": "Maximum security - no network, no sharing, protected client", "zh": "最高安全性 - 无网络、无共享、受保护客户端" },
+                    "icon": "🛡️",
+                    "file": "configs/isolated.wsb",
+                    "embeddedKey": "IsolatedWSB"
+                },
+                {
+                    "id": "browser_download",
+                    "type": "file",
+                    "name": { "en": "Browser Download", "zh": "浏览器下载" },
+                    "description": { "en": "Safe browsing with auto-open Edge, shared Downloads folder", "zh": "安全浏览，自动打开 Edge，共享下载文件夹" },
+                    "icon": "🌐",
+                    "file": "configs/browser-download.wsb",
+                    "embeddedKey": "BrowserDownloadWSB"
+                },
+                {
+                    "id": "app_installer",
+                    "type": "file",
+                    "name": { "en": "App Installer", "zh": "软件安装器" },
+                    "description": { "en": "Test installers from Downloads/Installers folder", "zh": "测试来自 Downloads/Installers 文件夹的安装程序" },
+                    "icon": "📦",
+                    "file": "configs/app-installer.wsb",
+                    "embeddedKey": "AppInstallerWSB"
+                },
+                {
+                    "id": "windows_default",
+                    "type": "template",
+                    "name": { "en": "Windows Default", "zh": "Windows 默认" },
+                    "description": { "en": "Default Windows Sandbox settings", "zh": "默认 Windows 沙盒设置" },
+                    "icon": "🪟",
+                    "templateId": 0
+                }
+            ]
+        };
+
+        // Embedded WSB contents (for file:// protocol access)
+        var EmbeddedWSBs = {
+            "SandboxWSB": `<Configuration>
+    <vGPU>Enable</vGPU>
+    <Networking>Default</Networking>
+    <AudioInput>Disable</AudioInput>
+    <VideoInput>Disable</VideoInput>
+    <PrinterRedirection>Disable</PrinterRedirection>
+    <ClipboardRedirection>Default</ClipboardRedirection>
+    <ProtectedClient>Disable</ProtectedClient>
+    <MappedFolders>
+        <MappedFolder>
+            <HostFolder>\\\\192.168.0.1\\share\\downloads</HostFolder>
+            <SandboxFolder>C:\\Users\\WDAGUtilityAccount\\Downloads</SandboxFolder>
+            <ReadOnly>false</ReadOnly>
+        </MappedFolder>
+        <MappedFolder>
+            <HostFolder>\\\\192.168.0.1\\share\\downloads</HostFolder>
+            <SandboxFolder>C:\\baidunetdiskdownload</SandboxFolder>
+            <ReadOnly>false</ReadOnly>
+        </MappedFolder>
+    </MappedFolders>
+    <WSBEditorConfig>
+        <EditorVersion>0.5.0</EditorVersion>
+        <EditorRelease>20250203</EditorRelease>
+        <TemplateID>0</TemplateID>
+        <DownloadTime>1770004923645</DownloadTime>
+        <HomeDirectory>\\\\192.168.0.1\\share</HomeDirectory>
+        <Language>en</Language>
+    </WSBEditorConfig>
+</Configuration>`,
+            "ReadonlyShareWSB": `<Configuration>
+    <vGPU>Disable</vGPU>
+    <Networking>Disable</Networking>
+    <MappedFolders>
+        <MappedFolder>
+            <HostFolder>C:\\Users\\Public\\Documents</HostFolder>
+            <SandboxFolder>C:\\Users\\WDAGUtilityAccount\\Desktop\\Shared</SandboxFolder>
+            <ReadOnly>true</ReadOnly>
+        </MappedFolder>
+    </MappedFolders>
+    <LogonCommand>
+        <Command>explorer.exe C:\\Users\\WDAGUtilityAccount\\Desktop\\Shared</Command>
+    </LogonCommand>
+    <WSBEditorConfig>
+        <EditorVersion>0.5.0</EditorVersion>
+        <EditorRelease>20250203</EditorRelease>
+        <TemplateID>0</TemplateID>
+        <DownloadTime>1770004923645</DownloadTime>
+        <HomeDirectory>C:\\Users\\Public</HomeDirectory>
+        <Language>en</Language>
+    </WSBEditorConfig>
+</Configuration>`,
+            "DevTestWSB": `<Configuration>
+    <vGPU>Enable</vGPU>
+    <Networking>Enable</Networking>
+    <ClipboardRedirection>Enable</ClipboardRedirection>
+    <MemoryInMB>4096</MemoryInMB>
+    <MappedFolders>
+        <MappedFolder>
+            <HostFolder>C:\\Sandbox\\Dev</HostFolder>
+            <SandboxFolder>C:\\Users\\WDAGUtilityAccount\\Desktop\\Dev</SandboxFolder>
+            <ReadOnly>false</ReadOnly>
+        </MappedFolder>
+    </MappedFolders>
+    <LogonCommand>
+        <Command>cmd /c echo Development Environment Ready!</Command>
+    </LogonCommand>
+    <WSBEditorConfig>
+        <EditorVersion>0.5.0</EditorVersion>
+        <EditorRelease>20260204</EditorRelease>
+        <TemplateID>3</TemplateID>
+        <DownloadTime>1770004923645</DownloadTime>
+        <HomeDirectory>C:\\Sandbox</HomeDirectory>
+        <Language>en</Language>
+    </WSBEditorConfig>
+</Configuration>`,
+            "IsolatedWSB": `<Configuration>
+    <vGPU>Disable</vGPU>
+    <Networking>Disable</Networking>
+    <MemoryInMB>2048</MemoryInMB>
+    <WSBEditorConfig>
+        <EditorVersion>0.5.0</EditorVersion>
+        <EditorRelease>20250203</EditorRelease>
+        <TemplateID>1</TemplateID>
+        <DownloadTime>1770004923645</DownloadTime>
+        <HomeDirectory></HomeDirectory>
+        <Language>en</Language>
+    </WSBEditorConfig>
+</Configuration>`,
+            "BrowserDownloadWSB": `<Configuration>
+    <vGPU>Enable</vGPU>
+    <Networking>Enable</Networking>
+    <MemoryInMB>4096</MemoryInMB>
+    <LogonCommand>
+        <Command>cmd /c start msedge</Command>
+    </LogonCommand>
+    <WSBEditorConfig>
+        <EditorVersion>0.5.0</EditorVersion>
+        <EditorRelease>20260204</EditorRelease>
+        <TemplateID>4</TemplateID>
+        <DownloadTime>1770004923645</DownloadTime>
+        <HomeDirectory>C:\\Users\\Public</HomeDirectory>
+        <Language>en</Language>
+    </WSBEditorConfig>
+</Configuration>`,
+            "AppInstallerWSB": `<Configuration>
+    <vGPU>Enable</vGPU>
+    <Networking>Enable</Networking>
+    <ClipboardRedirection>Enable</ClipboardRedirection>
+    <MemoryInMB>4096</MemoryInMB>
+    <MappedFolders>
+        <MappedFolder>
+            <HostFolder>C:\\Downloads\\Installers</HostFolder>
+            <SandboxFolder>C:\\Users\\WDAGUtilityAccount\\Downloads\\Installers</SandboxFolder>
+            <ReadOnly>false</ReadOnly>
+        </MappedFolder>
+    </MappedFolders>
+    <WSBEditorConfig>
+        <EditorVersion>0.5.0</EditorVersion>
+        <EditorRelease>20260204</EditorRelease>
+        <TemplateID>0</TemplateID>
+        <DownloadTime>1770004923645</DownloadTime>
+        <HomeDirectory>C:\\Downloads</HomeDirectory>
+        <Language>en</Language>
+    </WSBEditorConfig>
+</Configuration>`
+        };
+
+        // Load Quick Configs from configs.json
+        function loadQuickConfigs() {
+            // Check if running from file:// protocol
+            if (window.location.protocol === 'file:') {
+                console.log('Running from file:// protocol, using embedded configs');
+                QuickConfigs = EmbeddedConfigs.configs;
+                renderQuickConfigs();
+                return;
             }
-        } else {
-            document.getElementById('Editor_Input_HomeDirectory').required = false;
-            document.getElementById('Editor_Input_HomeDirectory').setAttribute("placeholder",t("placeholderHomeDir"));
+
+            fetch('configs/configs.json')
+                .then(response => response.json())
+                .then(data => {
+                    QuickConfigs = data.configs || [];
+                    renderQuickConfigs();
+                })
+                .catch(error => {
+                    console.error('Error loading configs:', error);
+                    // Fallback to default configs with local sandbox
+                    QuickConfigs = [
+                        {
+                            "id": "last_session",
+                            "type": "special",
+                            "name": { "en": "Resume Last Session", "zh": "恢复上次会话" },
+                            "description": { "en": "Continue from where you left off", "zh": "从上次离开的地方继续" },
+                            "icon": "🕐"
+                        },
+                        {
+                            "id": "windows_default",
+                            "type": "template",
+                            "name": { "en": "Windows Default", "zh": "Windows 默认" },
+                            "description": { "en": "Default Windows Sandbox settings", "zh": "默认 Windows 沙盒设置" },
+                            "icon": "🪟",
+                            "templateId": 0
+                        },
+                        {
+                            "id": "sandbox_local",
+                            "type": "file",
+                            "name": { "en": "Local Share Config", "zh": "本地共享配置" },
+                            "description": { "en": "Map network share to Sandbox with download folder", "zh": "将网络共享映射到沙盒，包含下载文件夹" },
+                            "icon": "📁",
+                            "file": "configs/Sandbox.wsb"
+                        }
+                    ];
+                    renderQuickConfigs();
+                });
         }
-        // Check HomeDirectory
-        document.getElementById('Editor_Input_HomeDirectory').value = ParsePath(document.getElementById('Editor_Input_HomeDirectory').value);
-        // Check MemoryInMB
-        if(document.getElementById('Editor_Input_MemoryInMB').checkValidity() == false) {
-            document.getElementById('Editor_Input_MemoryInMB').value = "";
-        }
-        // AutoSave
-        if(document.getElementById('Editor_Input_AutoSave').checked == true) {
-			localStorage.setItem("WSBEditor_LastSession_Filename",document.getElementById('Editor_Input_Filename').value);
-			localStorage.setItem("WSBEditor_LastSession_LastEditTime",Date.now());
-			localStorage.setItem("WSBEditor_LastSession_WSBXML",GenerateWSBXML(true));
-        } else {        	
-			localStorage.removeItem("WSBEditor_LastSession_Filename");
-			localStorage.removeItem("WSBEditor_LastSession_LastEditTime");
-			localStorage.removeItem("WSBEditor_LastSession_WSBXML");
-        }
-        // Save Editor Settings
-        if(document.getElementById('Editor_Input_PreserveEditorSettings').checked == true) {
-			localStorage.setItem("WSBEditor_EditorSettings_PreserveEditorSettings",true);
-			localStorage.setItem("WSBEditor_EditorSettings_HomeDirectory",document.getElementById('Editor_Input_HomeDirectory').value);
-			localStorage.setItem("WSBEditor_EditorSettings_AutoSave",document.getElementById('Editor_Input_AutoSave').checked);
-			localStorage.setItem("WSBEditor_EditorSettings_EditorXML",document.getElementById('Editor_Input_EditorXML').checked);
-        } else {
-			localStorage.setItem("WSBEditor_EditorSettings_PreserveEditorSettings",false);
-			localStorage.removeItem("WSBEditor_EditorSettings_HomeDirectory");
-			localStorage.removeItem("WSBEditor_EditorSettings_AutoSave");
-			localStorage.removeItem("WSBEditor_EditorSettings_EditorXML");
-        }
-        
-        // Show Err Message and Return Result
-        document.getElementById('Editor_Footer_Message').innerHTML = "";
-        for(i = 0; i < ErrorMsg.length; i++) {
-            document.getElementById('Editor_Footer_Message').innerHTML += ErrorMsg[i];
-        }
-        if(document.getElementById('Editor').checkValidity() == true && ErrorMsg.length == 0) {
-            document.getElementById('Editor_Footer_DownloadButton').disabled = false;
-            document.getElementById('Editor_Footer').setAttribute("class", "Footer");
-            return true;
-        } else {
-            document.getElementById('Editor_Footer_DownloadButton').disabled = true;
-            document.getElementById('Editor_Footer').setAttribute("class", "FooterRed");
-            return false;
-        }
-    }
-    function ApplyTemplate(TemplateID) {
-    	// Delete Filename if Unchanged
-    	if(document.getElementById('Editor_Input_Filename').value.toUpperCase() == CurrentTemplateFilename.toUpperCase()) {
-        	document.getElementById('Editor_Input_Filename').value = "";
-        }
-    	// Preserve Selected Inputs
-    	var PreservedInputs = document.getElementsByClassName("PreservedInput");
-    	var PreservedInputsValues = new Array();
-    	for(i = 0; i < PreservedInputs.length; i++) {
-    		if(PreservedInputs[i].type == "checkbox") {
-    			PreservedInputsValues.push(PreservedInputs[i].checked);
-    		} else {
-    			PreservedInputsValues.push(PreservedInputs[i].value);
-    		}
-    	}
-    	// Reset Form
-        document.getElementById('Editor').reset();
-        var Reset_Tristates = document.getElementsByClassName("TristateCheckbox");
-        for(i = 0; i < Reset_Tristates.length; i++) {
-            Tristate_Edit(Reset_Tristates[i].id, 0);
-        }
-        var MappedFoldersOthers = document.getElementById("Editor_MappedFoldersOthers_Tbody").querySelectorAll("input[type=checkbox]");
-        for(i = 0; i < MappedFoldersOthers.length; i++) {
-            SetEditorInput("MappedFoldersOthers_"+i,0);
-            SetEditorInput("MappedFoldersOthers_"+i+"_HostFolder","");
-            SetEditorInput("MappedFoldersOthers_"+i+"_SandboxFolder","");
-            Editor_MappedFoldersOthers_Onfocusout(i);
-        }
-        // Restore Preserved Inputs
-        for(i = 0; i < PreservedInputs.length; i++) {
-    		if(PreservedInputs[i].type == "checkbox") {
-    			document.getElementById(PreservedInputs[i].id).checked = PreservedInputsValues[i];
-    		} else {
-    			document.getElementById(PreservedInputs[i].id).value = PreservedInputsValues[i];
-    		}
-    	}
-        // Apply Template
-        switch(TemplateID) {
-            case 1:
-                CurrentTemplateName = t("templateMoreSecureNoNet");
-                SetEditorInput("ProtectedClient",true);
-                break;
-            case 2:
-                CurrentTemplateName = t("templateMoreSecureWithNet");
-                SetEditorInput("Networking",true);
-                SetEditorInput("ProtectedClient",true);
-                break;
-            case 3:
-                CurrentTemplateName = t("templateMoreFunctions");
-                SetEditorInput("vGPU",true);
-                SetEditorInput("Networking",true);
-                SetEditorInput("AudioInput",true);
-                SetEditorInput("VideoInput",true);
-                SetEditorInput("PrinterRedirection",true);
-                SetEditorInput("ClipboardRedirection",true);
-                break;
-            case 4:
-                CurrentTemplateName = t("templateTestDownloads");
-                SetEditorInput("Networking",true);
-                SetEditorInput("AudioInput",true);
-                SetEditorInput("ClipboardRedirection",true);
-                SetEditorInput("MappedUserFolders_Downloads",1);
-                break;
-            default:
-                CurrentTemplateName = t("templateWindowsDefault");
-                SetEditorInput("Networking",true);
-                SetEditorInput("AudioInput",true);
-                SetEditorInput("ClipboardRedirection",true);
-                break;
-        }
-        document.getElementById('Editor_TemplateName').innerHTML = CurrentTemplateName;
-        document.getElementById('FloatBox_Reset_TemplateName').innerHTML = CurrentTemplateName;
-        CurrentTemplateID = TemplateID;
-        CurrentTemplateFilename = "Sandbox ("+CurrentTemplateName+").wsb";
-        document.getElementById('Editor_Input_Filename').setAttribute("placeholder",CurrentTemplateFilename);
-        Editor_Onchange();
-    }
-    function SetEditorInput(SVar,SValue) {
-        if(document.getElementById('Editor_Input_'+SVar).type == "checkbox") {
-            if(document.getElementById('Editor_Input_'+SVar).className.search("TristateCheckbox") == -1) {
-            	document.getElementById('Editor_Input_'+SVar).checked = SValue;
-            } else {
-            	Tristate_Edit('Editor_Input_'+SVar,SValue);
-            }
-        } else {
-            document.getElementById('Editor_Input_'+SVar).value = SValue;
-        }
-    }
-    function ParsePath(PPath) {
-    	PPath = PPath.replace(/\//g,"\\");
-    	while(PPath.endsWith("\\")) {
-    		PPath = PPath.slice(0, -1);
-    	}
-    	return PPath;
-    }
-    
-    // WSB Handlers
-    function LoadWSB(LInput) {
-        // First load original and check for error
-        var WSBXML = new DOMParser().parseFromString(LInput.replace(/<\/?[A-Z,a-z,0-9]+.*?>/g, function (t) { return t.toLowerCase(); }),"text/xml");
-        if(WSBXML.getElementsByTagName("parsererror").length > 0) {
-            return [false, "XML parser error: "+WSBXML.getElementsByTagName("parsererror")[0].getElementsByTagName("div")[0].innerHTML+"."];
-        } else {
-            var ConfigXML = WSBXML.getElementsByTagName("configuration")[0];
-        }
-        if(ConfigXML === undefined) {
-            return [false, "Cannot find &lt;Configuration&gt; tag."];
-        } else {
-        	var LTemplateID = 0;
-        	// Read any <WSBEditorConfig> tag
-            var EditorXML = ConfigXML.getElementsByTagName("wsbeditorconfig")[0];
-        	if(EditorXML !== undefined) {
-        		var GetTemplateID = EditorXML.getElementsByTagName("templateid");
-        		if(GetTemplateID.length > 0) {
-            		LTemplateID = GetTemplateID[0].innerHTML;
-        		}
-        		var GetHomeDirectory = EditorXML.getElementsByTagName("homedirectory");
-        		if(GetHomeDirectory.length > 0) {
-        			document.getElementById('Editor_Input_HomeDirectory').value = ParsePath(GetHomeDirectory[0].innerHTML);
-        		}
-        	}
-        	// Apply template
-        	ApplyTemplate(parseInt(LTemplateID));
-        	// Load config
-            var LoadWSBWarnings = new Array();
-            function EnableDisableDefault(ETag) {
-                var GetFromXML = ConfigXML.getElementsByTagName(ETag.toLowerCase());
-                if(GetFromXML.length > 0) {
-                    var ETagValue = GetFromXML[0].innerHTML;
-                    switch(ETagValue.toLowerCase()) {
-                        case "":
-                            break;
-                        case "default":
-                            break;
-                        case "enable":
-                            SetEditorInput(ETag,true);
-                            break;
-                        case "disable":
-                            SetEditorInput(ETag,false);
-                            break;
-                        default:
-                            LoadWSBWarnings.push("&lt;"+ETag+"&gt; must be \"Enable\", \"Disable\" or \"Default\"; invalid value \""+ETagValue+"\" ignored.");
-                            break;
+
+        // Render Quick Configs panel
+        function renderQuickConfigs() {
+            var container = document.getElementById('QuickConfigsList');
+            if (!container) return;
+
+            container.innerHTML = '';
+
+            // Check if last session is available
+            var hasLastSession = localStorage.getItem("WSBEditor_LastSession_Filename") &&
+                localStorage.getItem("WSBEditor_LastSession_WSBXML");
+
+            QuickConfigs.forEach(function (config) {
+                // Skip last_session if not available
+                if (config.id === 'last_session' && !hasLastSession) {
+                    return;
+                }
+
+                var name = config.name[CurrentLanguage] || config.name['en'];
+                var desc = config.description[CurrentLanguage] || config.description['en'];
+                var icon = config.icon || '📄';
+
+                var item = document.createElement('div');
+                item.className = 'QuickConfigItem';
+                item.setAttribute('data-config-id', config.id);
+                item.onclick = function () { loadQuickConfig(config); };
+
+                // Special styling for last_session
+                if (config.id === 'last_session') {
+                    item.className += ' QuickConfigItemHighlight';
+                    var lastFile = localStorage.getItem("WSBEditor_LastSession_Filename") || '';
+                    var lastTime = localStorage.getItem("WSBEditor_LastSession_LastEditTime");
+                    var timeStr = '';
+                    if (lastTime) {
+                        var d = new Date(parseInt(lastTime));
+                        timeStr = d.toLocaleDateString() + ' ' + d.toLocaleTimeString();
                     }
+                    item.innerHTML = '<span class="QuickConfigIcon">' + icon + '</span>' +
+                        '<div class="QuickConfigInfo">' +
+                        '<div class="QuickConfigName">' + name + '</div>' +
+                        '<div class="QuickConfigDesc">' + lastFile + '<br>' + timeStr + '</div>' +
+                        '</div>';
+                } else {
+                    item.innerHTML = '<span class="QuickConfigIcon">' + icon + '</span>' +
+                        '<div class="QuickConfigInfo">' +
+                        '<div class="QuickConfigName">' + name + '</div>' +
+                        '<div class="QuickConfigDesc">' + desc + '</div>' +
+                        '</div>';
+                }
+
+                container.appendChild(item);
+            });
+        }
+
+        // Load a quick config
+        function loadQuickConfig(config) {
+            switch (config.type) {
+                case 'special':
+                    if (config.id === 'last_session') {
+                        loadLastSession();
+                    }
+                    break;
+                case 'template':
+                    if (config.templateId !== undefined) {
+                        ApplyTemplate(config.templateId);
+                        ShowAlert(t("loadedConfig") + getConfigName(config), "Green");
+                    }
+                    break;
+                case 'file':
+                    if (config.file) {
+                        loadConfigFile(config.file, getConfigName(config), config.embeddedKey);
+                    }
+                    break;
+            }
+        }
+
+        function getConfigName(config) {
+            return config.name[CurrentLanguage] || config.name['en'];
+        }
+
+        function loadLastSession() {
+            var filename = localStorage.getItem("WSBEditor_LastSession_Filename");
+            var xml = localStorage.getItem("WSBEditor_LastSession_WSBXML");
+            if (filename && xml) {
+                SetEditorInput("Filename", filename);
+                var LoadResult = LoadWSB(xml);
+                if (LoadResult[0] == false) {
+                    ApplyTemplate(0);
+                    ShowAlert(t("lastSessionCorrupted") + LoadResult[1], "Red");
+                } else {
+                    ShowAlert(t("loadedConfig") + filename, "Green");
+                }
+            }
+        }
+
+        function loadConfigFile(filePath, configName, embeddedKey) {
+            // Use embedded content for file:// protocol
+            if (window.location.protocol === 'file:' && embeddedKey && EmbeddedWSBs[embeddedKey]) {
+                var xmlContent = EmbeddedWSBs[embeddedKey];
+                var LoadResult = LoadWSB(xmlContent);
+                if (LoadResult[0] == true) {
+                    document.getElementById('Editor_Input_Filename').value = filePath.split('/').pop();
+                    ShowAlert(t("loadedConfig") + configName, "Green");
+                    if (LoadResult[1].length != 0) {
+                        ShowAlert(t("warningsWhileOpening") + configName + t("warningsWhileOpeningEnd"), "Yellow");
+                    }
+                } else {
+                    ShowAlert(t("loadConfigError") + configName + ". " + LoadResult[1], "Red");
+                }
+                return;
+            }
+
+            fetch(filePath)
+                .then(response => response.text())
+                .then(xmlContent => {
+                    var LoadResult = LoadWSB(xmlContent);
+                    if (LoadResult[0] == true) {
+                        document.getElementById('Editor_Input_Filename').value = filePath.split('/').pop();
+                        ShowAlert(t("loadedConfig") + configName, "Green");
+                        if (LoadResult[1].length != 0) {
+                            ShowAlert(t("warningsWhileOpening") + configName + t("warningsWhileOpeningEnd"), "Yellow");
+                        }
+                    } else {
+                        ShowAlert(t("loadConfigError") + configName + ". " + LoadResult[1], "Red");
+                    }
+                })
+                .catch(error => {
+                    ShowAlert(t("loadConfigError") + configName + ". " + error.message, "Red");
+                });
+        }
+
+        function Editor_Onchange() {
+            var ErrorMsg = new Array();
+            function IndicateErrRow(RowID) {
+                document.getElementById('EditorRow_' + RowID).setAttribute("class", "EditorRowErr");
+            }
+            var EditorRows = document.getElementById('Editor').getElementsByTagName("tr");
+            for (i = 0; i < EditorRows.length; i++) {
+                EditorRows[i].setAttribute("class", "");
+            }
+            var Filename = document.getElementById('Editor_Input_Filename').value;
+            if (Filename == "") {
+                document.getElementById('Editor_Input_Filename').value = CurrentTemplateFilename;
+            } else {
+                if (Filename.toUpperCase().endsWith(".WSB") == false) {
+                    document.getElementById('Editor_Input_Filename').value = Filename + ".wsb";
+                }
+            }
+            if (document.querySelectorAll("input[name=Editor_Input_MappedUserFolders]:checked,input[name=Editor_Input_MappedUserFolders]:indeterminate").length > 0) {
+                document.getElementById('Editor_Input_HomeDirectory').required = true;
+                document.getElementById('Editor_Input_HomeDirectory').setAttribute("placeholder", t("placeholderRequired"));
+                var HomeDirectoryPath = document.getElementById('Editor_Input_HomeDirectory').value;
+                if (HomeDirectoryPath == "") {
+                    ErrorMsg.push(t("homeDirectoryRequired"));
+                    IndicateErrRow("MappedUserFolders");
+                }
+            } else {
+                document.getElementById('Editor_Input_HomeDirectory').required = false;
+                document.getElementById('Editor_Input_HomeDirectory').setAttribute("placeholder", t("placeholderHomeDir"));
+            }
+            document.getElementById('Editor_Input_HomeDirectory').value = ParsePath(document.getElementById('Editor_Input_HomeDirectory').value);
+            if (document.getElementById('Editor_Input_MemoryInMB').checkValidity() == false) {
+                document.getElementById('Editor_Input_MemoryInMB').value = "";
+            }
+            if (document.getElementById('Editor_Input_AutoSave').checked == true) {
+                localStorage.setItem("WSBEditor_LastSession_Filename", document.getElementById('Editor_Input_Filename').value);
+                localStorage.setItem("WSBEditor_LastSession_LastEditTime", Date.now());
+                localStorage.setItem("WSBEditor_LastSession_WSBXML", GenerateWSBXML(true));
+            } else {
+                localStorage.removeItem("WSBEditor_LastSession_Filename");
+                localStorage.removeItem("WSBEditor_LastSession_LastEditTime");
+                localStorage.removeItem("WSBEditor_LastSession_WSBXML");
+            }
+            if (document.getElementById('Editor_Input_PreserveEditorSettings').checked == true) {
+                localStorage.setItem("WSBEditor_EditorSettings_PreserveEditorSettings", true);
+                localStorage.setItem("WSBEditor_EditorSettings_HomeDirectory", document.getElementById('Editor_Input_HomeDirectory').value);
+                localStorage.setItem("WSBEditor_EditorSettings_AutoSave", document.getElementById('Editor_Input_AutoSave').checked);
+                localStorage.setItem("WSBEditor_EditorSettings_EditorXML", document.getElementById('Editor_Input_EditorXML').checked);
+            } else {
+                localStorage.setItem("WSBEditor_EditorSettings_PreserveEditorSettings", false);
+                localStorage.removeItem("WSBEditor_EditorSettings_HomeDirectory");
+                localStorage.removeItem("WSBEditor_EditorSettings_AutoSave");
+                localStorage.removeItem("WSBEditor_EditorSettings_EditorXML");
+            }
+            document.getElementById('Editor_Footer_Message').innerHTML = "";
+            for (i = 0; i < ErrorMsg.length; i++) {
+                document.getElementById('Editor_Footer_Message').innerHTML += ErrorMsg[i];
+            }
+            if (document.getElementById('Editor').checkValidity() == true && ErrorMsg.length == 0) {
+                document.getElementById('Editor_Footer_DownloadButton').disabled = false;
+                document.getElementById('Editor_Footer').setAttribute("class", "Footer");
+                return true;
+            } else {
+                document.getElementById('Editor_Footer_DownloadButton').disabled = true;
+                document.getElementById('Editor_Footer').setAttribute("class", "FooterRed");
+                return false;
+            }
+        }
+        function ApplyTemplate(TemplateID) {
+            if (document.getElementById('Editor_Input_Filename').value.toUpperCase() == CurrentTemplateFilename.toUpperCase()) {
+                document.getElementById('Editor_Input_Filename').value = "";
+            }
+            var PreservedInputs = document.getElementsByClassName("PreservedInput");
+            var PreservedInputsValues = new Array();
+            for (i = 0; i < PreservedInputs.length; i++) {
+                if (PreservedInputs[i].type == "checkbox") {
+                    PreservedInputsValues.push(PreservedInputs[i].checked);
+                } else {
+                    PreservedInputsValues.push(PreservedInputs[i].value);
+                }
+            }
+            document.getElementById('Editor').reset();
+            var Reset_Tristates = document.getElementsByClassName("TristateCheckbox");
+            for (i = 0; i < Reset_Tristates.length; i++) {
+                Tristate_Edit(Reset_Tristates[i].id, 0);
+            }
+            var MappedFoldersOthers = document.getElementById("Editor_MappedFoldersOthers_Tbody").querySelectorAll("input[type=checkbox]");
+            for (i = 0; i < MappedFoldersOthers.length; i++) {
+                SetEditorInput("MappedFoldersOthers_" + i, 0);
+                SetEditorInput("MappedFoldersOthers_" + i + "_HostFolder", "");
+                SetEditorInput("MappedFoldersOthers_" + i + "_SandboxFolder", "");
+                Editor_MappedFoldersOthers_Onfocusout(i);
+            }
+            for (i = 0; i < PreservedInputs.length; i++) {
+                if (PreservedInputs[i].type == "checkbox") {
+                    document.getElementById(PreservedInputs[i].id).checked = PreservedInputsValues[i];
+                } else {
+                    document.getElementById(PreservedInputs[i].id).value = PreservedInputsValues[i];
+                }
+            }
+            switch (TemplateID) {
+                case 1:
+                    CurrentTemplateName = t("templateMoreSecureNoNet");
+                    SetEditorInput("ProtectedClient", true);
+                    break;
+                case 2:
+                    CurrentTemplateName = t("templateMoreSecureWithNet");
+                    SetEditorInput("Networking", true);
+                    SetEditorInput("ProtectedClient", true);
+                    break;
+                case 3:
+                    CurrentTemplateName = t("templateMoreFunctions");
+                    SetEditorInput("vGPU", true);
+                    SetEditorInput("Networking", true);
+                    SetEditorInput("AudioInput", true);
+                    SetEditorInput("VideoInput", true);
+                    SetEditorInput("PrinterRedirection", true);
+                    SetEditorInput("ClipboardRedirection", true);
+                    break;
+                case 4:
+                    CurrentTemplateName = t("templateTestDownloads");
+                    SetEditorInput("Networking", true);
+                    SetEditorInput("AudioInput", true);
+                    SetEditorInput("ClipboardRedirection", true);
+                    SetEditorInput("MappedUserFolders_Downloads", 1);
+                    break;
+                default:
+                    CurrentTemplateName = t("templateWindowsDefault");
+                    SetEditorInput("Networking", true);
+                    SetEditorInput("AudioInput", true);
+                    SetEditorInput("ClipboardRedirection", true);
+                    break;
+            }
+            document.getElementById('Editor_TemplateName').innerHTML = CurrentTemplateName;
+            document.getElementById('FloatBox_Reset_TemplateName').innerHTML = CurrentTemplateName;
+            CurrentTemplateID = TemplateID;
+            CurrentTemplateFilename = "Sandbox (" + CurrentTemplateName + ").wsb";
+            document.getElementById('Editor_Input_Filename').setAttribute("placeholder", CurrentTemplateFilename);
+            Editor_Onchange();
+        }
+        function SetEditorInput(SVar, SValue) {
+            if (document.getElementById('Editor_Input_' + SVar).type == "checkbox") {
+                if (document.getElementById('Editor_Input_' + SVar).className.search("TristateCheckbox") == -1) {
+                    document.getElementById('Editor_Input_' + SVar).checked = SValue;
+                } else {
+                    Tristate_Edit('Editor_Input_' + SVar, SValue);
+                }
+            } else {
+                document.getElementById('Editor_Input_' + SVar).value = SValue;
+            }
+        }
+        function ParsePath(PPath) {
+            PPath = PPath.replace(/\//g, "\\");
+            while (PPath.endsWith("\\")) {
+                PPath = PPath.slice(0, -1);
+            }
+            return PPath;
+        }
+
+        function LoadWSB(LInput) {
+            var WSBXML = new DOMParser().parseFromString(LInput.replace(/<\/?[A-Z,a-z,0-9]+.*?>/g, function (t) { return t.toLowerCase(); }), "text/xml");
+            if (WSBXML.getElementsByTagName("parsererror").length > 0) {
+                return [false, "XML parser error: " + WSBXML.getElementsByTagName("parsererror")[0].getElementsByTagName("div")[0].innerHTML + "."];
+            } else {
+                var ConfigXML = WSBXML.getElementsByTagName("configuration")[0];
+            }
+            if (ConfigXML === undefined) {
+                return [false, "Cannot find &lt;Configuration&gt; tag."];
+            } else {
+                var LTemplateID = 0;
+                var EditorXML = ConfigXML.getElementsByTagName("wsbeditorconfig")[0];
+                if (EditorXML !== undefined) {
+                    var GetTemplateID = EditorXML.getElementsByTagName("templateid");
+                    if (GetTemplateID.length > 0) {
+                        LTemplateID = GetTemplateID[0].innerHTML;
+                    }
+                    var GetHomeDirectory = EditorXML.getElementsByTagName("homedirectory");
+                    if (GetHomeDirectory.length > 0) {
+                        document.getElementById('Editor_Input_HomeDirectory').value = ParsePath(GetHomeDirectory[0].innerHTML);
+                    }
+                }
+                ApplyTemplate(parseInt(LTemplateID));
+                var LoadWSBWarnings = new Array();
+                function EnableDisableDefault(ETag) {
+                    var GetFromXML = ConfigXML.getElementsByTagName(ETag.toLowerCase());
+                    if (GetFromXML.length > 0) {
+                        var ETagValue = GetFromXML[0].innerHTML;
+                        switch (ETagValue.toLowerCase()) {
+                            case "":
+                                break;
+                            case "default":
+                                break;
+                            case "enable":
+                                SetEditorInput(ETag, true);
+                                break;
+                            case "disable":
+                                SetEditorInput(ETag, false);
+                                break;
+                            default:
+                                LoadWSBWarnings.push("&lt;" + ETag + "&gt; must be \"Enable\", \"Disable\" or \"Default\"; invalid value \"" + ETagValue + "\" ignored.");
+                                break;
+                        }
+                    }
+                }
+                function DefaultDisable(DTag) {
+                    var GetFromXML = ConfigXML.getElementsByTagName(DTag.toLowerCase());
+                    if (GetFromXML.length > 0) {
+                        var DTagValue = GetFromXML[0].innerHTML;
+                        switch (DTagValue.toLowerCase()) {
+                            case "":
+                                break;
+                            case "default":
+                                SetEditorInput(DTag, true);
+                                break;
+                            case "disable":
+                                SetEditorInput(DTag, false);
+                                break;
+                            default:
+                                LoadWSBWarnings.push("&lt;" + DTag + "&gt; must be \"Default\" or \"Disable\"; invalid value \"" + DTagValue + "\" ignored.");
+                                break;
+                        }
+                    }
+                }
+                EnableDisableDefault("vGPU");
+                DefaultDisable("Networking");
+                EnableDisableDefault("AudioInput");
+                EnableDisableDefault("VideoInput");
+                EnableDisableDefault("PrinterRedirection");
+                DefaultDisable("ClipboardRedirection");
+                EnableDisableDefault("ProtectedClient");
+                var GetMemoryInMB = ConfigXML.getElementsByTagName("memoryinmb");
+                if (GetMemoryInMB.length > 0 && GetMemoryInMB[0].innerHTML != "") {
+                    var MemoryInMB = GetMemoryInMB[0].innerHTML;
+                    if (isNaN(MemoryInMB) == true) {
+                        LoadWSBWarnings.push("&lt;MemoryInMB&gt; must be a positive integer; invalid value \"" + MemoryInMB + "\" ignored.");
+                    } else {
+                        MemoryInMB = parseFloat(MemoryInMB);
+                        if (Number.isInteger(MemoryInMB) == false) {
+                            LoadWSBWarnings.push("&lt;MemoryInMB&gt; must be a positive integer; invalid value " + MemoryInMB + " rounded to " + Math.round(MemoryInMB) + ".");
+                            SetEditorInput("MemoryInMB", Math.round(MemoryInMB));
+                        } else {
+                            SetEditorInput("MemoryInMB", MemoryInMB);
+                        }
+                    }
+                }
+                var GetLogonCommand = ConfigXML.getElementsByTagName("logoncommand");
+                var LogonCommand = "";
+                for (i = 0; i < GetLogonCommand.length; i++) {
+                    var GetCommand = GetLogonCommand[i].getElementsByTagName("command");
+                    for (j = 0; j < GetCommand.length; j++) {
+                        if (GetCommand[j].innerHTML != "") {
+                            LogonCommand += GetCommand[j].innerHTML + "\n";
+                        }
+                    }
+                }
+                SetEditorInput("LogonCommand", LogonCommand);
+                var GetMappedFolders = ConfigXML.getElementsByTagName("mappedfolder");
+                var HomeDirectory = document.getElementById('Editor_Input_HomeDirectory').value.toLowerCase();
+                for (i = 0; i < GetMappedFolders.length; i++) {
+                    var GetHostFolder = GetMappedFolders[i].getElementsByTagName("hostfolder");
+                    if (GetHostFolder.length > 0 && GetHostFolder[0].innerHTML != "") {
+                        var MappedFoldersOthers_Tbody = document.getElementById('Editor_MappedFoldersOthers_Tbody');
+                        var HostFolder = ParsePath(GetHostFolder[0].innerHTML);
+                        var GetSandboxFolder = GetMappedFolders[i].getElementsByTagName("sandboxfolder");
+                        if (GetSandboxFolder.length > 0) {
+                            var SandboxFolder = ParsePath(GetSandboxFolder[0].innerHTML);
+                        } else {
+                            var SandboxFolder = "";
+                        }
+                        var UserFolders = ["Desktop", "Downloads", "Documents", "Pictures", "Music"];
+                        var CorrespondingUserFolder = "";
+                        for (j = 0; j < UserFolders.length; j++) {
+                            if (HomeDirectory == "") {
+                                if (HostFolder.toLowerCase().endsWith("\\" + UserFolders[j].toLowerCase()) == true) {
+                                    HomeDirectory = HostFolder.slice(0, -UserFolders[j].length - 1);
+                                    SetEditorInput("HomeDirectory", HomeDirectory);
+                                    LoadWSBWarnings.push("Home Directory is assumed to be " + HomeDirectory + ".");
+                                }
+                            }
+                            if (HostFolder.toLowerCase() == HomeDirectory.toLowerCase() + "\\" + UserFolders[j].toLowerCase() && SandboxFolder.toLowerCase() == SandboxHomeDirectory.toLowerCase() + "\\" + UserFolders[j].toLowerCase()) {
+                                CorrespondingUserFolder = UserFolders[j];
+                            }
+                        }
+                        if (CorrespondingUserFolder != "") {
+                            var TargetCheckboxID = "MappedUserFolders_" + CorrespondingUserFolder;
+                        } else {
+                            var TargetCheckboxID = "MappedFoldersOthers_" + MappedFoldersOthers_Tbody.rows.length;
+                            Editor_MappedFoldersOthers_AppendRow(HostFolder, SandboxFolder);
+                            for (j = 0; j < MappedFoldersOthers_Tbody.rows.length; j++) {
+                                Editor_MappedFoldersOthers_Onfocusout(j);
+                            }
+                        }
+                        SetEditorInput(TargetCheckboxID, 1);
+                        var GetReadOnly = GetMappedFolders[i].getElementsByTagName("readonly");
+                        if (GetReadOnly.length > 0) {
+                            switch (GetReadOnly[0].innerHTML.toLowerCase()) {
+                                case "true":
+                                    SetEditorInput(TargetCheckboxID, 2);
+                                    break;
+                                case "false":
+                                    break;
+                                case "":
+                                    break;
+                                default:
+                                    LoadWSBWarnings.push("&lt;ReadOnly&gt; in &lt;MappedFolder&gt; must be \"true\" or \"false\"; invalid value \"" + GetReadOnly[0].innerHTML + "\" ignored.");
+                                    break;
+                            }
+                        }
+                    }
+                }
+                Editor_Onchange();
+                return [true, LoadWSBWarnings];
+            }
+        }
+        function GenerateWSBXML(InclEditorXML) {
+            var WSBXML = "<Configuration>%0D%0A";
+            function EnableDisableDefault(ETag) {
+                if (document.getElementById('Editor_Input_' + ETag).checked == true) {
+                    WSBXML += "    <" + ETag + ">Enable</" + ETag + ">%0D%0A";
+                } else {
+                    WSBXML += "    <" + ETag + ">Disable</" + ETag + ">%0D%0A";
                 }
             }
             function DefaultDisable(DTag) {
-                var GetFromXML = ConfigXML.getElementsByTagName(DTag.toLowerCase());
-                if(GetFromXML.length > 0) {
-                    var DTagValue = GetFromXML[0].innerHTML;
-                    switch(DTagValue.toLowerCase()) {
-                        case "":
-                            break;
-                        case "default":
-                            SetEditorInput(DTag,true);
-                            break;
-                        case "disable":
-                            SetEditorInput(DTag,false);
-                            break;
-                        default:
-                            LoadWSBWarnings.push("&lt;"+DTag+"&gt; must be \"Default\" or \"Disable\"; invalid value \""+DTagValue+"\" ignored.");
-                            break;
-                    }
+                if (document.getElementById('Editor_Input_' + DTag).checked == true) {
+                    WSBXML += "    <" + DTag + ">Default</" + DTag + ">%0D%0A";
+                } else {
+                    WSBXML += "    <" + DTag + ">Disable</" + DTag + ">%0D%0A";
                 }
             }
             EnableDisableDefault("vGPU");
@@ -577,1138 +1047,1334 @@
             EnableDisableDefault("PrinterRedirection");
             DefaultDisable("ClipboardRedirection");
             EnableDisableDefault("ProtectedClient");
-            // MemoryInMB
-            var GetMemoryInMB = ConfigXML.getElementsByTagName("memoryinmb");
-            if(GetMemoryInMB.length > 0 && GetMemoryInMB[0].innerHTML != "") {
-                var MemoryInMB = GetMemoryInMB[0].innerHTML;
-                if(isNaN(MemoryInMB) == true) {
-                    LoadWSBWarnings.push("&lt;MemoryInMB&gt; must be a positive integer; invalid value \""+MemoryInMB+"\" ignored.");
-                } else {
-                    MemoryInMB = parseFloat(MemoryInMB);
-                    if(Number.isInteger(MemoryInMB) == false) {
-                        LoadWSBWarnings.push("&lt;MemoryInMB&gt; must be a positive integer; invalid value "+MemoryInMB+" rounded to "+Math.round(MemoryInMB)+".");
-                        SetEditorInput("MemoryInMB",Math.round(MemoryInMB));
-                    } else {
-                        SetEditorInput("MemoryInMB",MemoryInMB);
-                    }
+            var MemoryInMB = document.getElementById('Editor_Input_MemoryInMB').value;
+            if (!(MemoryInMB == 0 || MemoryInMB == null || MemoryInMB == "")) {
+                WSBXML += "    <MemoryInMB>" + MemoryInMB + "</MemoryInMB>%0D%0A";
+            }
+            var LogonCommandXML = "";
+            var LogonCommand = document.getElementById('Editor_Input_LogonCommand').value.split("\n");
+            for (var i = 0; i < LogonCommand.length; i++) {
+                if (LogonCommand[i] != "") {
+                    LogonCommandXML += "        <Command>" + LogonCommand[i] + "</Command>%0D%0A";
                 }
             }
-            // LogonCommand
-            var GetLogonCommand = ConfigXML.getElementsByTagName("logoncommand");
-            var LogonCommand = "";
-            for(i = 0; i < GetLogonCommand.length; i++) {
-                var GetCommand = GetLogonCommand[i].getElementsByTagName("command");
-                for(j = 0; j < GetCommand.length; j++) {
-                    if(GetCommand[j].innerHTML != "") {
-                        LogonCommand += GetCommand[j].innerHTML+"\n";
-                    }
+            if (LogonCommandXML != "") {
+                WSBXML += "    <LogonCommand>%0D%0A" + LogonCommandXML + "    </LogonCommand>%0D%0A";
+            }
+            var MappedFoldersXML = "";
+            var MappedUserFolders = document.querySelectorAll("input[name=Editor_Input_MappedUserFolders]:checked,input[name=Editor_Input_MappedUserFolders]:indeterminate");
+            for (i = 0; i < MappedUserFolders.length; i++) {
+                MappedFoldersXML += "        <MappedFolder>%0D%0A            <HostFolder>" + document.getElementById('Editor_Input_HomeDirectory').value + "\\" + MappedUserFolders[i].value + "</HostFolder>%0D%0A            <SandboxFolder>" + SandboxHomeDirectory + "\\" + MappedUserFolders[i].value + "</SandboxFolder>%0D%0A            <ReadOnly>" + MappedUserFolders[i].indeterminate + "</ReadOnly>%0D%0A        </MappedFolder>%0D%0A";
+            }
+            var MappedFoldersOthers = document.getElementById("Editor_MappedFoldersOthers_Tbody").querySelectorAll("input[type=checkbox]");
+            for (i = 0; i < MappedFoldersOthers.length; i++) {
+                var HostFolder = document.getElementById("Editor_Input_MappedFoldersOthers_" + i + "_HostFolder").value;
+                var SandboxFolder = document.getElementById("Editor_Input_MappedFoldersOthers_" + i + "_SandboxFolder").value;
+                if (SandboxFolder == "") {
+                    SandboxFolder = DefaultSandboxFolder(HostFolder);
+                }
+                if ((MappedFoldersOthers[i].checked == true || MappedFoldersOthers[i].indeterminate == true) && HostFolder != "") {
+                    MappedFoldersXML += "        <MappedFolder>%0D%0A            <HostFolder>" + HostFolder + "</HostFolder>%0D%0A            <SandboxFolder>" + SandboxFolder + "</SandboxFolder>%0D%0A            <ReadOnly>" + MappedFoldersOthers[i].indeterminate + "</ReadOnly>%0D%0A        </MappedFolder>%0D%0A";
                 }
             }
-            SetEditorInput("LogonCommand",LogonCommand);
-            // MappedFolders
-            var GetMappedFolders = ConfigXML.getElementsByTagName("mappedfolder");
-            var HomeDirectory = document.getElementById('Editor_Input_HomeDirectory').value.toLowerCase();
-            for(i = 0; i < GetMappedFolders.length; i++) {
-            	var GetHostFolder = GetMappedFolders[i].getElementsByTagName("hostfolder");
-            	if(GetHostFolder.length > 0 && GetHostFolder[0].innerHTML != "") {
-                    var MappedFoldersOthers_Tbody = document.getElementById('Editor_MappedFoldersOthers_Tbody');
-            		var HostFolder = ParsePath(GetHostFolder[0].innerHTML);
-				var GetSandboxFolder = GetMappedFolders[i].getElementsByTagName("sandboxfolder");
-				if(GetSandboxFolder.length > 0) {
-					var SandboxFolder = ParsePath(GetSandboxFolder[0].innerHTML);
-				} else {
-					var SandboxFolder = "";
-				}
-				var UserFolders = ["Desktop", "Downloads", "Documents", "Pictures", "Music"];
-				var CorrespondingUserFolder = "";
-				for(j = 0; j < UserFolders.length; j++) {
-					// Guess HomeDirectory if empty
-					if(HomeDirectory == "") {
-						if(HostFolder.toLowerCase().endsWith("\\"+UserFolders[j].toLowerCase()) == true) {
-							HomeDirectory = HostFolder.slice(0, -UserFolders[j].length-1);
-							SetEditorInput("HomeDirectory",HomeDirectory);
-							LoadWSBWarnings.push("Home Directory is assumed to be "+HomeDirectory+".");
-						}
-					}
-					// Check if corresponds to a user folder
-					if(HostFolder.toLowerCase() == HomeDirectory.toLowerCase()+"\\"+UserFolders[j].toLowerCase() && SandboxFolder.toLowerCase() == SandboxHomeDirectory.toLowerCase()+"\\"+UserFolders[j].toLowerCase()) {
-						CorrespondingUserFolder = UserFolders[j];
-					}
-				}
-				if(CorrespondingUserFolder != "") {
-					var TargetCheckboxID = "MappedUserFolders_"+CorrespondingUserFolder;
-				} else {
-                    var TargetCheckboxID = "MappedFoldersOthers_"+MappedFoldersOthers_Tbody.rows.length;
-                    Editor_MappedFoldersOthers_AppendRow(HostFolder,SandboxFolder);
-                    for(j = 0; j < MappedFoldersOthers_Tbody.rows.length; j++) {
-                        Editor_MappedFoldersOthers_Onfocusout(j);
-                    }
-				}
-				// Check readonly or not and set checkbox
-				SetEditorInput(TargetCheckboxID,1);
-				var GetReadOnly = GetMappedFolders[i].getElementsByTagName("readonly");
-				if(GetReadOnly.length > 0) {
-					switch(GetReadOnly[0].innerHTML.toLowerCase()) {
-						case "true":
-							SetEditorInput(TargetCheckboxID,2);
-							break;
-						case "false":
-							break;
-						case "":
-							break;
-						default:
-							LoadWSBWarnings.push("&lt;ReadOnly&gt; in &lt;MappedFolder&gt; must be \"true\" or \"false\"; invalid value \""+GetReadOnly[0].innerHTML+"\" ignored.");
-							break;
-					}
-				}
-            	}
-            	
+            if (MappedFoldersXML != "") {
+                WSBXML += "    <MappedFolders>%0D%0A" + MappedFoldersXML + "    </MappedFolders>%0D%0A";
             }
-            Editor_Onchange();
-            return [true,LoadWSBWarnings];
-            // If fatal error, return array(false,errormsg)
-            // If no fatal error, return array(true,warnings)
+            if (InclEditorXML == true || document.getElementById('Editor_Input_EditorXML').checked == true) {
+                WSBXML += "    <WSBEditorConfig>%0D%0A        <EditorVersion>" + EditorVersion + "</EditorVersion>%0D%0A        <EditorRelease>" + EditorRelease + "</EditorRelease>%0D%0A        <TemplateID>" + CurrentTemplateID + "</TemplateID>%0D%0A        <DownloadTime>" + Date.now() + "</DownloadTime>%0D%0A        <HomeDirectory>" + document.getElementById('Editor_Input_HomeDirectory').value + "</HomeDirectory>%0D%0A        <Language>" + CurrentLanguage + "</Language>%0D%0A    </WSBEditorConfig>%0D%0A";
+            }
+            WSBXML += "</Configuration>";
+            return WSBXML;
         }
-    }
-    function GenerateWSBXML(InclEditorXML) {
-        // No input checks here
-        var WSBXML = "<Configuration>%0D%0A";
-        function EnableDisableDefault(ETag) {
-            if(document.getElementById('Editor_Input_'+ETag).checked == true) {
-                WSBXML += "    <"+ETag+">Enable</"+ETag+">%0D%0A";
+        function DownloadFile() {
+            if (Editor_Onchange() == true) {
+                var FileContainer = document.createElement("a");
+                FileContainer.href = 'data:text/xml;charset=utf-8,' + GenerateWSBXML();
+                FileContainer.setAttribute("Download", document.getElementById('Editor_Input_Filename').value);
+                FileContainer.style.display = 'none';
+                document.body.appendChild(FileContainer);
+                FileContainer.click();
+                document.body.removeChild(FileContainer);
             } else {
-                WSBXML += "    <"+ETag+">Disable</"+ETag+">%0D%0A";
+                ShowAlert(t("invalidConfig") + document.getElementById('Editor_Footer_Message').innerHTML + t("invalidConfigEnd"), "Red");
             }
         }
-        function DefaultDisable(DTag) {
-            if(document.getElementById('Editor_Input_'+DTag).checked == true) {
-                WSBXML += "    <"+DTag+">Default</"+DTag+">%0D%0A";
-            } else {
-                WSBXML += "    <"+DTag+">Disable</"+DTag+">%0D%0A";
+
+        var Tristate_Status = new Array();
+        function Tristate_Edit(Tid, TState) {
+            switch (TState) {
+                case 1:
+                    document.getElementById(Tid).checked = true;
+                    document.getElementById(Tid).indeterminate = false;
+                    Tristate_Status[Tid] = 1;
+                    var TNote = t("readWrite");
+                    break;
+                case 2:
+                    document.getElementById(Tid).checked = true;
+                    document.getElementById(Tid).indeterminate = true;
+                    Tristate_Status[Tid] = 2;
+                    var TNote = t("readOnly");
+                    break;
+                default:
+                    document.getElementById(Tid).checked = false;
+                    document.getElementById(Tid).indeterminate = false;
+                    Tristate_Status[Tid] = 0;
+                    var TNote = t("disabled");
+                    break;
             }
+            document.getElementById(Tid + '_Notes').innerHTML = TNote;
         }
-        EnableDisableDefault("vGPU");
-        DefaultDisable("Networking");
-        EnableDisableDefault("AudioInput");
-        EnableDisableDefault("VideoInput");
-        EnableDisableDefault("PrinterRedirection");
-        DefaultDisable("ClipboardRedirection");
-        EnableDisableDefault("ProtectedClient");
-        // MemoryInMB
-        var MemoryInMB = document.getElementById('Editor_Input_MemoryInMB').value;
-        if(!(MemoryInMB == 0 || MemoryInMB == null || MemoryInMB == "")) {
-            WSBXML += "    <MemoryInMB>"+MemoryInMB+"</MemoryInMB>%0D%0A";
+        function Tristate_Next(Tid) {
+            Tristate_Edit(Tid, Tristate_Status[Tid] + 1);
         }
-        // LogonCommand
-        var LogonCommandXML = "";
-        var LogonCommand = document.getElementById('Editor_Input_LogonCommand').value.split("\n");
-        for(var i = 0; i < LogonCommand.length; i++) {
-            if(LogonCommand[i] != "") {
-                LogonCommandXML += "        <Command>"+LogonCommand[i]+"</Command>%0D%0A";
+
+        var FloatBoxBuffer = 0;
+        function ShowFloatBox(TargetID) {
+            setTimeout(function () {
+                document.getElementById("FloatBox_" + TargetID).style.display = "block";
+                document.getElementById('FloatBoxBackground').style.display = "block";
+            }, FloatBoxBuffer + 10);
+            setTimeout(function () {
+                document.getElementById("FloatBox_" + TargetID).style.opacity = "1";
+                document.getElementById('FloatBoxBackground').style.opacity = "1";
+                FloatBoxBuffer = 0;
+            }, FloatBoxBuffer + 60);
+            FloatBoxBuffer = 10;
+        }
+        function HideFloatBox(TargetID) {
+            document.getElementById("FloatBox_" + TargetID).style.opacity = "0";
+            document.getElementById('FloatBoxBackground').style.opacity = "0";
+            setTimeout(function () {
+                document.getElementById("FloatBox_" + TargetID).style.display = "none";
+                document.getElementById('FloatBoxBackground').style.display = "none";
+                FloatBoxBuffer = 0;
+            }, FloatBoxBuffer + 200);
+            FloatBoxBuffer = 200;
+        }
+        function FloatBox_Templates_Update() {
+            var NewText;
+            switch (parseInt(document.querySelector('input[name=FloatBox_Templates_Template]:checked').value)) {
+                case 1:
+                    NewText = t("templateDescSecureNoNet");
+                    break;
+                case 2:
+                    NewText = t("templateDescSecureWithNet");
+                    break;
+                case 3:
+                    NewText = t("templateDescMoreFunctions");
+                    break;
+                case 4:
+                    NewText = t("templateDescTestDownloads");
+                    break;
+                default:
+                    NewText = t("templateDescDefault");
             }
+            document.getElementById('FloatBox_Templates_Description').innerHTML = NewText;
         }
-        if(LogonCommandXML != "") {
-            WSBXML += "    <LogonCommand>%0D%0A"+LogonCommandXML+"    </LogonCommand>%0D%0A";
+        function FloatBox_Templates_Submit() {
+            ApplyTemplate(parseInt(document.querySelector('input[name=FloatBox_Templates_Template]:checked').value));
+            HideFloatBox("Templates");
         }
-        // MappedFolders
-        var MappedFoldersXML = "";
-        var MappedUserFolders = document.querySelectorAll("input[name=Editor_Input_MappedUserFolders]:checked,input[name=Editor_Input_MappedUserFolders]:indeterminate");
-		for(i=0; i < MappedUserFolders.length; i++) {
-			MappedFoldersXML += "        <MappedFolder>%0D%0A            <HostFolder>"+document.getElementById('Editor_Input_HomeDirectory').value+"\\"+MappedUserFolders[i].value+"</HostFolder>%0D%0A            <SandboxFolder>"+SandboxHomeDirectory+"\\"+MappedUserFolders[i].value+"</SandboxFolder>%0D%0A            <ReadOnly>"+MappedUserFolders[i].indeterminate+"</ReadOnly>%0D%0A        </MappedFolder>%0D%0A";
-		}
-        var MappedFoldersOthers = document.getElementById("Editor_MappedFoldersOthers_Tbody").querySelectorAll("input[type=checkbox]");
-        for(i=0; i < MappedFoldersOthers.length; i++) {
-            var HostFolder = document.getElementById("Editor_Input_MappedFoldersOthers_"+i+"_HostFolder").value;
-            var SandboxFolder = document.getElementById("Editor_Input_MappedFoldersOthers_"+i+"_SandboxFolder").value;
-            if(SandboxFolder == "") {
-                SandboxFolder = DefaultSandboxFolder(HostFolder);
-            }
-            if((MappedFoldersOthers[i].checked == true || MappedFoldersOthers[i].indeterminate == true) && HostFolder != "") {
-                MappedFoldersXML += "        <MappedFolder>%0D%0A            <HostFolder>"+HostFolder+"</HostFolder>%0D%0A            <SandboxFolder>"+SandboxFolder+"</SandboxFolder>%0D%0A            <ReadOnly>"+MappedFoldersOthers[i].indeterminate+"</ReadOnly>%0D%0A        </MappedFolder>%0D%0A";
-            }
+        function FloatBox_Templates_Cancel() {
+            HideFloatBox("Templates");
+            document.getElementById('FloatBox_Templates_Template_' + CurrentTemplateID).checked = true;
+            FloatBox_Templates_Update();
         }
-        if(MappedFoldersXML != "") {
-            WSBXML += "    <MappedFolders>%0D%0A"+MappedFoldersXML+"    </MappedFolders>%0D%0A";
+        function FloatBox_Reset_Submit() {
+            HideFloatBox("Reset");
+            ApplyTemplate(CurrentTemplateID);
         }
-        // WSBEditorConfig
-        if(InclEditorXML == true || document.getElementById('Editor_Input_EditorXML').checked == true) {
-        	WSBXML += "    <WSBEditorConfig>%0D%0A        <EditorVersion>"+EditorVersion+"</EditorVersion>%0D%0A        <EditorRelease>"+EditorRelease+"</EditorRelease>%0D%0A        <TemplateID>"+CurrentTemplateID+"</TemplateID>%0D%0A        <DownloadTime>"+Date.now()+"</DownloadTime>%0D%0A        <HomeDirectory>"+document.getElementById('Editor_Input_HomeDirectory').value+"</HomeDirectory>%0D%0A        <Language>"+CurrentLanguage+"</Language>%0D%0A    </WSBEditorConfig>%0D%0A";
-        }
-        // End
-        WSBXML += "</Configuration>";
-        return WSBXML;
-    }
-    function DownloadFile() {
-        if(Editor_Onchange() == true) {
-            var FileContainer = document.createElement("a");
-            FileContainer.href = 'data:text/xml;charset=utf-8,'+GenerateWSBXML();
-            FileContainer.setAttribute("Download", document.getElementById('Editor_Input_Filename').value);
-            FileContainer.style.display = 'none';
-            document.body.appendChild(FileContainer);
-            FileContainer.click();
-            document.body.removeChild(FileContainer);
-        } else {
-            ShowAlert(t("invalidConfig")+document.getElementById('Editor_Footer_Message').innerHTML+t("invalidConfigEnd"),"Red");
-        }
-    }
-    
-    // Tristate Checkbox Handlers
-    var Tristate_Status = new Array();
-    function Tristate_Edit(Tid,TState) {
-        switch(TState) {
-            case 1:
-                document.getElementById(Tid).checked = true;
-                document.getElementById(Tid).indeterminate = false;
-                Tristate_Status[Tid] = 1;
-                var TNote = t("readWrite");
-                break;
-            case 2:
-                document.getElementById(Tid).checked = true;
-                document.getElementById(Tid).indeterminate = true;
-                Tristate_Status[Tid] = 2;
-                var TNote = t("readOnly");
-                break;
-            default:
-                document.getElementById(Tid).checked = false;
-                document.getElementById(Tid).indeterminate = false;
-                Tristate_Status[Tid] = 0;
-                var TNote = t("disabled");
-                break;
-        }
-        document.getElementById(Tid+'_Notes').innerHTML = TNote;
-    }
-    function Tristate_Next(Tid) {
-        Tristate_Edit(Tid,Tristate_Status[Tid]+1);
-    }
-    
-    // FloatBox Handlers
-    var FloatBoxBuffer = 0;
-    function ShowFloatBox(TargetID) {
-        setTimeout( function() {
-            document.getElementById("FloatBox_"+TargetID).style.display = "block";
-            document.getElementById('FloatBoxBackground').style.display = "block";
-        }, FloatBoxBuffer+10);
-		setTimeout( function() {
-			document.getElementById("FloatBox_"+TargetID).style.opacity = "1";
-			document.getElementById('FloatBoxBackground').style.opacity = "1";
-            FloatBoxBuffer = 0;
-		}, FloatBoxBuffer+60);
-        FloatBoxBuffer = 10;
-    }
-    function HideFloatBox(TargetID) {
-        document.getElementById("FloatBox_"+TargetID).style.opacity = "0";
-        document.getElementById('FloatBoxBackground').style.opacity = "0";
-        setTimeout( function() {
-			document.getElementById("FloatBox_"+TargetID).style.display = "none";
-			document.getElementById('FloatBoxBackground').style.display = "none";
-            FloatBoxBuffer = 0;
-        }, FloatBoxBuffer+200);
-        FloatBoxBuffer = 200;
-    }
-    function FloatBox_Welcome_Submit() {
-        // Restore Last Session
-        if(document.getElementById("FloatBox_Welcome_Input_Resume").checked == true) {
-            SetEditorInput("Filename",localStorage.getItem("WSBEditor_LastSession_Filename"));
-            var LoadResult = LoadWSB(localStorage.getItem("WSBEditor_LastSession_WSBXML"));
-            if(LoadResult[0] == false) {
-                ApplyTemplate(0);
-                ShowAlert(t("lastSessionCorrupted")+LoadResult[1],"Red");
-            }
-        } else {
-            ApplyTemplate(0);
-        }
-        // Set Editor Handlers
-        var Editor_Inputs = document.getElementById('Editor').querySelectorAll("input,select,textarea");
-        for (i = 0; i < Editor_Inputs.length; i++) {
-            Editor_Inputs[i].addEventListener('change', function() { Editor_Onchange() });
-        }
-        EditorInitiated = true;
-        HideFloatBox('Welcome');
-    }
-    function FloatBox_Templates_Update() {
-        var NewText;
-        switch (parseInt(document.querySelector('input[name=FloatBox_Templates_Template]:checked').value)) {
-            case 1:
-                NewText = t("templateDescSecureNoNet");
-                break;
-            case 2:
-                NewText = t("templateDescSecureWithNet");
-                break;
-            case 3:
-                NewText = t("templateDescMoreFunctions");
-                break;
-            case 4:
-                NewText = t("templateDescTestDownloads");
-                break;
-            default:
-                NewText = t("templateDescDefault");
-        }
-        document.getElementById('FloatBox_Templates_Description').innerHTML = NewText;
-    }
-    function FloatBox_Templates_Submit() {
-        ApplyTemplate(parseInt(document.querySelector('input[name=FloatBox_Templates_Template]:checked').value));
-        HideFloatBox("Templates");
-    }
-    function FloatBox_Templates_Cancel() {
-        HideFloatBox("Templates");
-        document.getElementById('FloatBox_Templates_Template_'+CurrentTemplateID).checked = true;
-        FloatBox_Templates_Update();
-    }
-    function FloatBox_Reset_Submit() {
-        HideFloatBox("Reset");
-        ApplyTemplate(CurrentTemplateID);
-    }
-    function OpenWSBFile() {
-    	var SelectedFile = document.getElementById('FloatBox_Open_Input').files[0];
-    	if(SelectedFile !== undefined) {
-            var FReader = new FileReader();
-            FReader.readAsText(SelectedFile);
-            FReader.onload = function(e) {
-                var LoadResult = LoadWSB(e.target.result);
-                if(LoadResult[0] == true) {
-                    HideFloatBox("Open");
-                    document.getElementById('FloatBox_OpenWSBWarnings_Table').innerHTML = "";
-                    document.getElementById('Editor_Input_Filename').value = SelectedFile.name;
-                    if(LoadResult[1].length != 0) {
-                        ShowAlert(t("warningsWhileOpening")+SelectedFile.name+t("warningsWhileOpeningEnd"),"Yellow");
-                        for(i = 0; i < LoadResult[1].length; i++) {
-                            document.getElementById('FloatBox_OpenWSBWarnings_Table').insertRow(-1).insertCell(0).innerHTML = LoadResult[1][i];
+        function OpenWSBFile() {
+            var SelectedFile = document.getElementById('FloatBox_Open_Input').files[0];
+            if (SelectedFile !== undefined) {
+                var FReader = new FileReader();
+                FReader.readAsText(SelectedFile);
+                FReader.onload = function (e) {
+                    var LoadResult = LoadWSB(e.target.result);
+                    if (LoadResult[0] == true) {
+                        HideFloatBox("Open");
+                        document.getElementById('FloatBox_OpenWSBWarnings_Table').innerHTML = "";
+                        document.getElementById('Editor_Input_Filename').value = SelectedFile.name;
+                        if (LoadResult[1].length != 0) {
+                            ShowAlert(t("warningsWhileOpening") + SelectedFile.name + t("warningsWhileOpeningEnd"), "Yellow");
+                            for (i = 0; i < LoadResult[1].length; i++) {
+                                document.getElementById('FloatBox_OpenWSBWarnings_Table').insertRow(-1).insertCell(0).innerHTML = LoadResult[1][i];
+                            }
+                            document.getElementById('FloatBox_OpenWSBWarnings_Filename').innerHTML = SelectedFile.name;
+                            ShowFloatBox("OpenWSBWarnings");
                         }
-                        document.getElementById('FloatBox_OpenWSBWarnings_Filename').innerHTML = SelectedFile.name;
-                        ShowFloatBox("OpenWSBWarnings");
+                        ShowAlert(t("fileOpened") + SelectedFile.name + t("fileOpenedEnd"), "Green");
+                    } else {
+                        ShowAlert(t("errorOpening") + SelectedFile.name + t("errorOpeningEnd") + LoadResult[1] + t("errorOpeningHint"), "Red");
                     }
-                    ShowAlert(t("fileOpened")+SelectedFile.name+t("fileOpenedEnd"),"Green");
-                } else {
-                    ShowAlert(t("errorOpening")+SelectedFile.name+t("errorOpeningEnd")+LoadResult[1]+t("errorOpeningHint"),"Red");
+                    document.getElementById('FloatBox_Open').reset();
                 }
-                document.getElementById('FloatBox_Open').reset();
-            }
-    	}
-    }
-    
-    // Interface
-    function Editor_ShowAdvancedSettings() {
-    	document.getElementById('Editor_AdvancedSettings').style.display = 'block';
-    	document.getElementById('Editor_AdvancedSettingsLink').style.display = 'none';
-    }
-    function Editor_MappedFoldersOthers_AppendRow(EHostFolder,ESandboxFolder) {
-        var Tbody = document.getElementById('Editor_MappedFoldersOthers_Tbody');
-        var NewRow = document.createElement("tr");
-        var RowIndex = Tbody.rows.length;
-        NewRow.innerHTML = Tbody.rows[0].innerHTML.replace(/0/g,RowIndex);
-        Tbody.appendChild(NewRow);
-        document.getElementById("Editor_Input_MappedFoldersOthers_"+RowIndex).addEventListener("change", function() { Tristate_Next(this.id) });
-        if(EHostFolder !== undefined) {
-            SetEditorInput("MappedFoldersOthers_"+RowIndex+"_HostFolder",EHostFolder);
-        }
-        if(ESandboxFolder !== undefined) {
-            SetEditorInput("MappedFoldersOthers_"+RowIndex+"_SandboxFolder",ESandboxFolder);
-        }
-        Editor_MappedFoldersOthers_Oninput(RowIndex);
-    }
-    function Editor_MappedFoldersOthers_Oninput(Eid) {
-        var HostFolder = document.getElementById("Editor_Input_MappedFoldersOthers_"+Eid+"_HostFolder");
-        var SandboxFolder = document.getElementById("Editor_Input_MappedFoldersOthers_"+Eid+"_SandboxFolder");
-        var Tbody = document.getElementById('Editor_MappedFoldersOthers_Tbody');
-        if(HostFolder.value != "" || SandboxFolder.value != "") {
-            // Create new row if last row
-            if(Eid == Tbody.rows.length-1) {
-                Editor_MappedFoldersOthers_AppendRow();
             }
         }
-        if(HostFolder.value == "") {
-            SandboxFolder.setAttribute("placeholder",t("sandboxFolder"));
-        } else {
-            // Set Read/write and SandboxFolder placeholder if not empty
-            var Checkbox = document.getElementById("Editor_Input_MappedFoldersOthers_"+Eid);
-            if(Checkbox.checked == false && Checkbox.indeterminate == false) {
-                SetEditorInput("MappedFoldersOthers_"+Eid,1);
+
+        function Editor_ShowAdvancedSettings() {
+            document.getElementById('Editor_AdvancedSettings').style.display = 'block';
+            document.getElementById('Editor_AdvancedSettingsLink').style.display = 'none';
+        }
+        function Editor_MappedFoldersOthers_AppendRow(EHostFolder, ESandboxFolder) {
+            var Tbody = document.getElementById('Editor_MappedFoldersOthers_Tbody');
+            var NewRow = document.createElement("tr");
+            var RowIndex = Tbody.rows.length;
+            NewRow.innerHTML = Tbody.rows[0].innerHTML.replace(/0/g, RowIndex);
+            Tbody.appendChild(NewRow);
+            document.getElementById("Editor_Input_MappedFoldersOthers_" + RowIndex).addEventListener("change", function () { Tristate_Next(this.id) });
+            if (EHostFolder !== undefined) {
+                SetEditorInput("MappedFoldersOthers_" + RowIndex + "_HostFolder", EHostFolder);
             }
-            SandboxFolder.setAttribute("placeholder",DefaultSandboxFolder(HostFolder.value));
+            if (ESandboxFolder !== undefined) {
+                SetEditorInput("MappedFoldersOthers_" + RowIndex + "_SandboxFolder", ESandboxFolder);
+            }
+            Editor_MappedFoldersOthers_Oninput(RowIndex);
         }
-    }
-    function Editor_MappedFoldersOthers_Onfocusout(Eid) {
-        var HostFolder = document.getElementById("Editor_Input_MappedFoldersOthers_"+Eid+"_HostFolder");
-        var SandboxFolder = document.getElementById("Editor_Input_MappedFoldersOthers_"+Eid+"_SandboxFolder");
-        var Tbody = document.getElementById('Editor_MappedFoldersOthers_Tbody');
-        // Parse Paths
-        HostFolder.value = ParsePath(HostFolder.value);
-        SandboxFolder.value = ParsePath(SandboxFolder.value);
-        // Remove row if empty
-        if(HostFolder.value == "" && SandboxFolder.value == "" && Eid != Tbody.rows.length-1) {
-            Tbody.rows[Eid].style.display = 'none';
-        }
-    }
-    function DefaultSandboxFolder(HostFolder) {
-        return SandboxHomeDirectory+"\\Desktop\\"+ParsePath(HostFolder).substring(HostFolder.lastIndexOf("\\")+1);
-    }
-    function ShowAlert(Msg,Color) {
-        var AlertBox = document.createElement("div");
-        AlertBox.setAttribute("class", "MessageBox "+Color+"Border "+Color+"Back");
-        AlertBox.innerHTML = Msg;
-        setTimeout( function() {
-			AlertBox.style.opacity = "0";
-        }, 10000);
-        setTimeout( function() {
-            document.getElementById('AlertList').removeChild(AlertBox);
-        }, 11000);
-        var ExistingAlertBoxes = document.getElementById('AlertList').getElementsByClassName("MessageBox");
-        var j = 0.7;
-        for(i = 0; i < ExistingAlertBoxes.length; i++) {
-            ExistingAlertBoxes[i].style.opacity = Math.pow(j,i+1);
-        }
-        document.getElementById('AlertList').prepend(AlertBox);
-    }
-    
-    window.onload = function() {
-        // Load saved language preference
-        var savedLang = localStorage.getItem("WSBEditor_Language");
-        if (savedLang && Translations[savedLang]) {
-            CurrentLanguage = savedLang;
-            document.documentElement.lang = savedLang === "zh" ? "zh-CN" : "en";
-        }
-        
-        // Set language selector
-        var langSelector = document.getElementById('LanguageSelector');
-        if (langSelector) {
-            langSelector.value = CurrentLanguage;
-        }
-        
-        // Apply translations
-        applyTranslations();
-        
-        // Test JS
-        document.getElementById('FloatBox_Welcome_SubmitButton').disabled = false;
-        // Set Tristate Checkbox Handler
-        var Tristate_Checkboxes = document.getElementsByClassName("TristateCheckbox");
-        for (i = 0; i < Tristate_Checkboxes.length; i++) {
-            Tristate_Checkboxes[i].addEventListener('change', function() { Tristate_Next(this.id) });
-            Tristate_Edit(Tristate_Checkboxes[i].id,0);
-        }
-        // Set Template List Handler
-        var FloatBox_Templates_Inputs = document.getElementById('FloatBox_Templates').querySelectorAll("input");;
-        for (i = 0; i < FloatBox_Templates_Inputs.length; i++) {
-            FloatBox_Templates_Inputs[i].addEventListener('change', function() { FloatBox_Templates_Update() });
-        }
-        FloatBox_Templates_Update();
-        // Restore Editor Settings
-        function RestoreEditorSettings(Rid) {
-        	var SettingsValue = localStorage.getItem("WSBEditor_EditorSettings_"+Rid);
-        	switch(SettingsValue) {
-        		case "true":
-        			SetEditorInput(Rid,true);
-        			break;
-        		case "false":
-        			SetEditorInput(Rid,false);
-        			break;
-        		case "":
-        			break;
-        		case null:
-        			break;
-        		default:
-        			SetEditorInput(Rid,SettingsValue);
-        	}
-        }
-        RestoreEditorSettings("PreserveEditorSettings");
-        RestoreEditorSettings("HomeDirectory");
-        RestoreEditorSettings("AutoSave");
-        RestoreEditorSettings("EditorXML");
-        // Check if any last session
-        if(localStorage.getItem("WSBEditor_LastSession_Filename") != "" && localStorage.getItem("WSBEditor_LastSession_Filename") != null) {
-            document.getElementById("FloatBox_Welcome_Input_Resume").disabled = false;
-            document.getElementById("FloatBox_Welcome_Input_Resume").checked = true;
-            var LastEditTime = new Date(parseInt(localStorage.getItem("WSBEditor_LastSession_LastEditTime")));
-            document.getElementById("FloatBox_Welcome_Input_Resume_Notes").innerHTML = "You last edited "+localStorage.getItem("WSBEditor_LastSession_Filename")+" at "+LastEditTime.toLocaleTimeString()+" on "+LastEditTime.toLocaleDateString()+".";
-        } else {
-            document.getElementById("FloatBox_Welcome_Input_Resume").checked = false;
-            document.getElementById("FloatBox_Welcome_Input_Resume").disabled = true;
-            if(localStorage.getItem("WSBEditor_EditorSettings_AutoSave") == "false") {
-            	document.getElementById("FloatBox_Welcome_Input_Resume_Notes").innerHTML = t("noSessionAutoSave");
+        function Editor_MappedFoldersOthers_Oninput(Eid) {
+            var HostFolder = document.getElementById("Editor_Input_MappedFoldersOthers_" + Eid + "_HostFolder");
+            var SandboxFolder = document.getElementById("Editor_Input_MappedFoldersOthers_" + Eid + "_SandboxFolder");
+            var Tbody = document.getElementById('Editor_MappedFoldersOthers_Tbody');
+            if (HostFolder.value != "" || SandboxFolder.value != "") {
+                if (Eid == Tbody.rows.length - 1) {
+                    Editor_MappedFoldersOthers_AppendRow();
+                }
+            }
+            if (HostFolder.value == "") {
+                SandboxFolder.setAttribute("placeholder", t("sandboxFolder"));
+            } else {
+                var Checkbox = document.getElementById("Editor_Input_MappedFoldersOthers_" + Eid);
+                if (Checkbox.checked == false && Checkbox.indeterminate == false) {
+                    SetEditorInput("MappedFoldersOthers_" + Eid, 1);
+                }
+                SandboxFolder.setAttribute("placeholder", DefaultSandboxFolder(HostFolder.value));
             }
         }
-    }
-    window.onerror = function(errMsg, errURL, errLine, errCol, errObj) {
-        if(errLine < 1) {
-            var ShowMsg = "check console for details";
-        } else {
-            var ShowMsg = errMsg+' at '+errURL+' ('+errLine+', '+errCol+')';
+        function Editor_MappedFoldersOthers_Onfocusout(Eid) {
+            var HostFolder = document.getElementById("Editor_Input_MappedFoldersOthers_" + Eid + "_HostFolder");
+            var SandboxFolder = document.getElementById("Editor_Input_MappedFoldersOthers_" + Eid + "_SandboxFolder");
+            var Tbody = document.getElementById('Editor_MappedFoldersOthers_Tbody');
+            HostFolder.value = ParsePath(HostFolder.value);
+            SandboxFolder.value = ParsePath(SandboxFolder.value);
+            if (HostFolder.value == "" && SandboxFolder.value == "" && Eid != Tbody.rows.length - 1) {
+                Tbody.rows[Eid].style.display = 'none';
+            }
         }
-        ShowAlert(t("jsError")+ShowMsg+t("jsErrorEnd"),"Red");
-    }
-    window.onbeforeunload = function() {
-        if(EditorInitiated == true) {
-            Editor_Onchange();
+        function DefaultSandboxFolder(HostFolder) {
+            return SandboxHomeDirectory + "\\Desktop\\" + ParsePath(HostFolder).substring(HostFolder.lastIndexOf("\\") + 1);
         }
-    }
-</script>
-<style>
-    * {
-        transition: all 0.2s;
-        box-sizing: border-box;
-    }
-    html {
-        background-image:linear-gradient(to right, #e9e5f4, #f4f3f7);
-    }
-    html, body {
-        margin: 0;
-        width: 100%;
-    }
-    html, body, button, input, select, textarea {
-        font-family: "Ubuntu", "Calibri", "Arial", "Microsoft YaHei", "SimHei", sans-serif;
-        font-size: 100%;
-        line-height: 1.2;
-        border-radius: 0;
-        outline: none;
-    }
-    div, td, p, span {
-        word-wrap: break-word;
-    }
-    a {
-        color: #0066CC;
-        text-decoration: none;
-    }
-    h1 {
-        font-weight: normal;
-        font-size: 2rem;
-    }
-    h2 {
-        font-weight: normal;
-        font-size: 1.5rem;
-        margin: 0 0 10px 0;
-    }
-    h6,.h6span {
-    	display: block;
-        margin: 5px 0px;
-        font-size: 0.8em;
-        color: #666;
-        font-weight: normal;
-    }
-    table {
-        width: 100%;
-        border: 0;
-    }
-    table, tr, td {
-        border-spacing: 0px;
-        padding: 0;
-        margin: 0;
-    }
-    .RedBorder {
-        border-left: 5px solid #ff1919;
-    }
-    .RedBack {
-        color: #ff1919;
-        background-color: rgba(242, 172, 172, 0.95);
-    }
-    .YellowBorder {
-        border-left: 5px solid #D4A017;
-    }
-    .YellowBack {
-        color: #D4A017;
-        background-color: rgb(255, 253, 208, 0.95);
-    }
-    .BlueBorder {
-        border-left: 5px solid #3399FF;
-    }
-    .BlueBack {
-        background-color: rgba(181, 215, 251, 0.95);
-    }
-    .GreenBorder {
-        border-left: 5px solid #265323;
-    }
-    .GreenBack {
-        color: #265323;
-        background-color: rgb(138, 213, 93, 0.95);
-    }
-    .Hidden {
-    	display: none;
-    }
-    @keyframes FadeIn {
-        0% {display: none; opacity: 0}
-        20% {display: none; opacity: 0}
-        21% {display: block; opacity: 0}
-        100% {display: block; opacity: 1}
-    }
-    @keyframes FadeOut {
-        0% {display: block; opacity: 1}
-        79% {display: block; opacity: 0}
-        80% {display: none; opacity: 0}
-        100% {display: none; opacity: 0}
-    }
-    input[type=checkbox] {
-    	display: none;
-    }
-    input[type=checkbox] + label {
-        display: inline-block;
-        min-width: 150px;
-        position: relative;
-        padding: 0px 0px 0px 35px;
-        margin: 0px 15px 12px 0px;
-        cursor: pointer;
-        user-select: none;
-        vertical-align: text-top;
-    }
-    input[type=checkbox] + label span.Checkmark {
-        position: absolute;
-        top: 0;
-        left: 0;
-        height: 27px;
-        width: 27px;
-        background-color: #EEE;
-        border: 1px #AAA solid;
-    }
-    input[type=checkbox]:disabled + label {
-        opacity: 0.3;
-    }
-    input[type=checkbox]:enabled:hover + label span.Checkmark {
-        background-color: #CCC;
-    }
-    input[type=checkbox]:enabled:checked + label span.Checkmark, input[type=checkbox]:enabled:indeterminate + label span.Checkmark {
-        background-color: #2196F3;
-        border: 1px #0066CC solid;
-    }
-    input[type=checkbox]:not(:indeterminate) + label span.Checkmark:after {
-        content: "";
-        position: absolute;
-        display: block;
-        left: 9px;
-        top: 5px;
-        width: 5px;
-        height: 10px;
-        border: solid white;
-        border-width: 0 3px 3px 0;
-        transform: rotate(45deg);
-    }
-    input[type=checkbox]:indeterminate + label span.Checkmark:after {
-        content: "";
-        position: absolute;
-        display: block;
-        left: 5px;
-        top: 10px;
-        width: 15px;
-        height: 5px;
-        background-color: #FFF;
-    }
-    input[type=file] {
-        display: none;
-    }
-    input[type=text], input[type=number] {
-        border-width: 0px 0px 2px 0px;
-        border-color: #888;
-        color: #222;
-        background-color: transparent;
-    }
-    input[type=number] {
-        text-align: right;
-        width: 100px;
-        -webkit-appearance: none;
-        -moz-appearance: none;
-        appearance: none;
-    }
-    input[type=number]::-webkit-outer-spin-button, input[type=number]::-webkit-inner-spin-button {
-        -webkit-appearance: none;
-        appearance: none;
-        margin: 0;
-    }
-    input[type=text] {
-        width: 100%;
-        overflow: hidden;
-        text-overflow: ellipsis;
-    }
-    input[type="text"]:enabled:hover, input[type="text"]:enabled:focus, input[type="number"]:enabled:hover, input[type="number"]:enabled:focus {
-        border-color: #222;
-    }
-    input[type="text"]:enabled:invalid, input[type="number"]:enabled:invalid {
-        border-color: #ff1919;
-        background-color: rgba(234, 143, 143, 0.51);
-        color: #222;
-    }
-    textarea {
-        width: 100%;
-        height: 100px;
-        min-height: 100px;
-        max-height: 500px;
-        resize: vertical;
-        border: 2px #888 solid;
-        color: #222;
-        background-color: #EEE;
-        padding: 5px;
-    }
-    textarea:enabled:hover, textarea:enabled:focus {
-        border-color: #444;
-        background-color: #FFF;
-    }
-    input[type="button"], input[type="submit"] {
-        text-align: center;
-        border: 0px;
-        font-size: 0.8rem;
-        width: 100px;
-        height: 35px;
-        margin: 2px 5px 2px 0px;
-        -webkit-appearance: none;
-        -moz-appearance: none;
-        appearance: none;
-    }
-    input[type="button"] {
-        background-color: #CCC;
-        color: #444;
-        border: 1px #AAA solid;
-    }
-    input[type="button"]:enabled:hover, input[type="button"]:enabled:active {
-        background-color: #AAA;
-        box-shadow: 0px 0px 3px #888;
-        color: #FFF;
-    }
-    input[type="submit"] {
-        background-color: #3399FF;
-        color: #FFF;
-        border: 1px #0066CC solid;
-    }
-    input[type="submit"]:enabled:hover, input[type="submit"]:enabled:active {
-        background-color: #0066CC;
-        box-shadow: 0px 0px 3px #888;
-    }
-    input[type="button"]:disabled, input[type="submit"]:disabled {
-        opacity: 0.2;
-    }
-    input.TextRadio {
-        display: none;
-    }
-    input.TextRadio + label {
-        display: block;
-        margin: 0;
-        padding: 10px 20px;
-        background-color: transparent;
-    }
-    input.TextRadio:enabled + label:hover {
-        background-color: #DDD;
-    }
-    input.TextRadio:enabled:checked + label {
-        background-color: #b5d7fb;
-    }
-    input.TextRadio:disabled + label {
-        opacity: 0.3;
-    }
-    table.RadioDescription {
-        border: 1px #CCC solid;
-        background-color: #FFF;
-        table-layout: fixed;
-    }
-    table.RadioDescription td {
-        vertical-align: text-top;
-        text-align: left;
-    }
-    table.RadioDescription td:nth-child(1) {
-        border-right: 1px #CCC solid;
-        width: 30%;
-    }
-    table.RadioDescription td:nth-child(2) {
-        padding: 0px 20px;
-    }
-    table.RadioDescription td:nth-child(2) p {
-        font-size: 0.9em;
-    }
-    div.RadioDescription_Content {
-        margin: 10px 0px;
-        overflow: auto;
-    }
-    table.EditorTable {
-        padding: 20px 10px 100px 10px;
-        max-width: 1000px;
-        margin-left: auto;
-        margin-right: auto;
-    }
-    table.EditorTable>tbody>tr>td {
-        padding: 10px;
-        vertical-align: top;
-    }
-    table.EditorTable>tbody>tr>td:nth-child(1) {
-        font-weight: bold;
-        text-align: right;
-        width: 20%;
-    }
-    table.EditorTable tr.EditorRowErr td:nth-child(1) {
-    	color: #ff1919;
-    }
-    table.Footer, table.FooterRed {
-        position: fixed;
-        bottom: 0;
-        width: 100%;
-        height: auto;
-        padding: 10px 15px;
-        font-size: 0.8em;
-    }
-    table.Footer {
-        border-top: 1px #888 solid;
-        background-color: rgba(240, 240, 240, 0.95);
-        color: #000;
-    }
-    table.FooterRed {
-        border-top: 1px #ff1919 solid;
-        background-color: rgba(242, 172, 172, 0.95);
-        color: #ff1919;
-    }
-    table.Footer td:nth-child(2), table.FooterRed td:nth-child(2) {
-        text-align: right;
-    }
-    div.MessageBox {
-        font-weight: bold;
-        padding: 10px 20px 10px 15px;
-        margin-bottom: 10px;
-    }
-    div.MessageBox p {
-        margin: 5px 0px;
-        font-size: 0.8em;
-        font-weight: normal;
-    }
-    div#AlertList {
-        position: fixed;
-        top: 0;
-        right: 0;
-        width: 100%;
-        max-width: 400px;
-        padding: 10px;
-    }
-    div#AlertList div.MessageBox {
-        box-shadow: 0px 0px 10px #888;
-    }
-    div.FloatBoxBackground {
-        position: fixed;
-        top: 0;
-        width: 100%;
-        height: 100%;
-        background-color: rgba(150, 150, 150, 0.50);
-    }
-    form.FloatBox {
-        position: fixed;
-        top: 0;
-        left: 0;
-        right: 0;
-        margin: auto;
-        width: 100%;
-        max-width: 650px;
-        max-height: min-content;
-        padding: 20px;
-        background-color: #FFF;
-        box-shadow: 0px 0px 10px #888;
-    }
-    form.FloatBox.Hidden {
-    	opacity: 0;
-    }
-    p.FloatBoxFooter {
-        text-align: right;
-        margin: 10px -5px 0px 0px;
-    }
-    noscript {
-        display: block;
-        margin: 20px 0px;
-        color: #ff1919;
-        font-weight: bold;
-    }
-    div.TableContainer {
-        border: 2px #888 solid;
-        margin-bottom: 12px;
-        font-size: 0.9em;
-        background: #FFF;
-        height: 150px;
-        min-height: 150px;
-        max-height: 500px;
-        max-width: 100%;
-        overflow: auto;
-        resize: vertical;
-    }
-    div.TableContainer:hover {
-    	border: 2px #444 solid;
-    }
-    div.TableContainer thead tr td {
-        background-color: #CCC;
-    }
-    div.TableContainer tr {
-        min-width: 100%;
-    }
-    div.TableContainer tr:hover {
-        background-color: #EEE;
-    }
-    div.TableContainer td {
-        padding: 5px;
-    }
-    table#Editor_MappedFoldersOthers_Table {
-    }
-    table#Editor_MappedFoldersOthers_Table td:nth-child(1) {
-        width: 35px;
-        height: 35px;
-        vertical-align: text-top;
-    }
-    table#Editor_MappedFoldersOthers_Table label {
-        padding: 0;
-        margin: 0;
-        min-width: 0;
-    }
-    table#Editor_MappedFoldersOthers_Table td:not(:first-child) {
-        width: calc(50% - 30px);
-    }
-    select#LanguageSelector {
-        position: fixed;
-        top: 10px;
-        right: 10px;
-        z-index: 100;
-        padding: 5px 10px;
-        border: 1px solid #888;
-        background-color: #FFF;
-        font-size: 0.9em;
-    }
-    select#LanguageSelector:hover {
-        border-color: #444;
-    }
-    @media only screen and (min-width: 600px) {
-		table.EditorTable>tbody>tr>td {
-			padding-left: 25px;
-            padding-right: 25px;
-		}
-		table.EditorTable>tbody>tr>td:nth-child(1) {
-			border-right: 3px solid #CCC;
-			color: #666;
-		}
-		table.EditorTable>tbody>tr:hover:not(.EditorRowErr)>td:nth-child(1) {
-			border-right: 3px solid #444;
-			color: #000;
-		}
-		table.EditorTable tr.EditorRowErr td:nth-child(1) {
-			border-right: 3px solid #ff1919;
-		}
-    }
-</style>
+        function ShowAlert(Msg, Color) {
+            var AlertBox = document.createElement("div");
+            AlertBox.setAttribute("class", "MessageBox " + Color + "Border " + Color + "Back");
+            AlertBox.innerHTML = Msg;
+            setTimeout(function () {
+                AlertBox.style.opacity = "0";
+            }, 10000);
+            setTimeout(function () {
+                document.getElementById('AlertList').removeChild(AlertBox);
+            }, 11000);
+            var ExistingAlertBoxes = document.getElementById('AlertList').getElementsByClassName("MessageBox");
+            var j = 0.7;
+            for (i = 0; i < ExistingAlertBoxes.length; i++) {
+                ExistingAlertBoxes[i].style.opacity = Math.pow(j, i + 1);
+            }
+            document.getElementById('AlertList').prepend(AlertBox);
+        }
+
+        window.onload = function () {
+            var savedLang = localStorage.getItem("WSBEditor_Language");
+            if (savedLang && Translations[savedLang]) {
+                CurrentLanguage = savedLang;
+                document.documentElement.lang = savedLang === "zh" ? "zh-CN" : "en";
+            }
+            var langSelector = document.getElementById('LanguageSelector');
+            if (langSelector) {
+                langSelector.value = CurrentLanguage;
+            }
+            applyTranslations();
+            loadQuickConfigs();
+
+            var Tristate_Checkboxes = document.getElementsByClassName("TristateCheckbox");
+            for (i = 0; i < Tristate_Checkboxes.length; i++) {
+                Tristate_Checkboxes[i].addEventListener('change', function () { Tristate_Next(this.id) });
+                Tristate_Edit(Tristate_Checkboxes[i].id, 0);
+            }
+            var FloatBox_Templates_Inputs = document.getElementById('FloatBox_Templates').querySelectorAll("input");
+            for (i = 0; i < FloatBox_Templates_Inputs.length; i++) {
+                FloatBox_Templates_Inputs[i].addEventListener('change', function () { FloatBox_Templates_Update() });
+            }
+            FloatBox_Templates_Update();
+
+            function RestoreEditorSettings(Rid) {
+                var SettingsValue = localStorage.getItem("WSBEditor_EditorSettings_" + Rid);
+                switch (SettingsValue) {
+                    case "true":
+                        SetEditorInput(Rid, true);
+                        break;
+                    case "false":
+                        SetEditorInput(Rid, false);
+                        break;
+                    case "":
+                        break;
+                    case null:
+                        break;
+                    default:
+                        SetEditorInput(Rid, SettingsValue);
+                }
+            }
+            RestoreEditorSettings("PreserveEditorSettings");
+            RestoreEditorSettings("HomeDirectory");
+            RestoreEditorSettings("AutoSave");
+            RestoreEditorSettings("EditorXML");
+
+            // Set up editor handlers
+            var Editor_Inputs = document.getElementById('Editor').querySelectorAll("input,select,textarea");
+            for (i = 0; i < Editor_Inputs.length; i++) {
+                Editor_Inputs[i].addEventListener('change', function () { Editor_Onchange() });
+            }
+            EditorInitiated = true;
+
+            // Check if there's a last session
+            var hasLastSession = localStorage.getItem("WSBEditor_LastSession_Filename") &&
+                localStorage.getItem("WSBEditor_LastSession_WSBXML");
+
+            if (!hasLastSession) {
+                // Auto-load Sandbox.wsb if no last session
+                var loadSandbox = function (xmlContent) {
+                    var LoadResult = LoadWSB(xmlContent);
+                    if (LoadResult[0] == true) {
+                        document.getElementById('Editor_Input_Filename').value = 'Sandbox.wsb';
+                        ShowAlert(t("loadedConfig") + 'Sandbox.wsb', "Green");
+                    }
+                };
+
+                if (window.location.protocol === 'file:') {
+                    // Use embedded content for file:// protocol
+                    loadSandbox(EmbeddedWSBs['SandboxWSB']);
+                } else {
+                    fetch('configs/Sandbox.wsb')
+                        .then(response => {
+                            if (response.ok) {
+                                return response.text();
+                            }
+                            throw new Error('Sandbox.wsb not found');
+                        })
+                        .then(loadSandbox)
+                        .catch(error => {
+                            // Fallback to default template
+                            ApplyTemplate(0);
+                        });
+                }
+            } else {
+                ApplyTemplate(0);
+            }
+        }
+        window.onerror = function (errMsg, errURL, errLine, errCol, errObj) {
+            if (errLine < 1) {
+                var ShowMsg = "check console for details";
+            } else {
+                var ShowMsg = errMsg + ' at ' + errURL + ' (' + errLine + ', ' + errCol + ')';
+            }
+            ShowAlert(t("jsError") + ShowMsg + t("jsErrorEnd"), "Red");
+        }
+        window.onbeforeunload = function () {
+            if (EditorInitiated == true) {
+                Editor_Onchange();
+            }
+        }
+    </script>
+    <style>
+        * {
+            transition: all 0.2s;
+            box-sizing: border-box;
+        }
+
+        html {
+            background-image: linear-gradient(to right, #e9e5f4, #f4f3f7);
+        }
+
+        html,
+        body {
+            margin: 0;
+            width: 100%;
+        }
+
+        html,
+        body,
+        button,
+        input,
+        select,
+        textarea {
+            font-family: "Ubuntu", "Calibri", "Arial", "Microsoft YaHei", "SimHei", sans-serif;
+            font-size: 100%;
+            line-height: 1.2;
+            border-radius: 0;
+            outline: none;
+        }
+
+        div,
+        td,
+        p,
+        span {
+            word-wrap: break-word;
+        }
+
+        a {
+            color: #0066CC;
+            text-decoration: none;
+        }
+
+        h1 {
+            font-weight: normal;
+            font-size: 2rem;
+        }
+
+        h2 {
+            font-weight: normal;
+            font-size: 1.5rem;
+            margin: 0 0 10px 0;
+        }
+
+        h6,
+        .h6span {
+            display: block;
+            margin: 5px 0px;
+            font-size: 0.8em;
+            color: #666;
+            font-weight: normal;
+        }
+
+        table {
+            width: 100%;
+            border: 0;
+        }
+
+        table,
+        tr,
+        td {
+            border-spacing: 0px;
+            padding: 0;
+            margin: 0;
+        }
+
+        .RedBorder {
+            border-left: 5px solid #ff1919;
+        }
+
+        .RedBack {
+            color: #ff1919;
+            background-color: rgba(242, 172, 172, 0.95);
+        }
+
+        .YellowBorder {
+            border-left: 5px solid #D4A017;
+        }
+
+        .YellowBack {
+            color: #D4A017;
+            background-color: rgb(255, 253, 208, 0.95);
+        }
+
+        .BlueBorder {
+            border-left: 5px solid #3399FF;
+        }
+
+        .BlueBack {
+            background-color: rgba(181, 215, 251, 0.95);
+        }
+
+        .GreenBorder {
+            border-left: 5px solid #265323;
+        }
+
+        .GreenBack {
+            color: #265323;
+            background-color: rgb(138, 213, 93, 0.95);
+        }
+
+        .Hidden {
+            display: none;
+        }
+
+        @keyframes FadeIn {
+            0% {
+                display: none;
+                opacity: 0
+            }
+
+            20% {
+                display: none;
+                opacity: 0
+            }
+
+            21% {
+                display: block;
+                opacity: 0
+            }
+
+            100% {
+                display: block;
+                opacity: 1
+            }
+        }
+
+        @keyframes FadeOut {
+            0% {
+                display: block;
+                opacity: 1
+            }
+
+            79% {
+                display: block;
+                opacity: 0
+            }
+
+            80% {
+                display: none;
+                opacity: 0
+            }
+
+            100% {
+                display: none;
+                opacity: 0
+            }
+        }
+
+        input[type=checkbox] {
+            display: none;
+        }
+
+        input[type=checkbox]+label {
+            display: inline-block;
+            min-width: 150px;
+            position: relative;
+            padding: 0px 0px 0px 35px;
+            margin: 0px 15px 12px 0px;
+            cursor: pointer;
+            user-select: none;
+            vertical-align: text-top;
+        }
+
+        input[type=checkbox]+label span.Checkmark {
+            position: absolute;
+            top: 0;
+            left: 0;
+            height: 27px;
+            width: 27px;
+            background-color: #EEE;
+            border: 1px #AAA solid;
+        }
+
+        input[type=checkbox]:disabled+label {
+            opacity: 0.3;
+        }
+
+        input[type=checkbox]:enabled:hover+label span.Checkmark {
+            background-color: #CCC;
+        }
+
+        input[type=checkbox]:enabled:checked+label span.Checkmark,
+        input[type=checkbox]:enabled:indeterminate+label span.Checkmark {
+            background-color: #2196F3;
+            border: 1px #0066CC solid;
+        }
+
+        input[type=checkbox]:not(:indeterminate)+label span.Checkmark:after {
+            content: "";
+            position: absolute;
+            display: block;
+            left: 9px;
+            top: 5px;
+            width: 5px;
+            height: 10px;
+            border: solid white;
+            border-width: 0 3px 3px 0;
+            transform: rotate(45deg);
+        }
+
+        input[type=checkbox]:indeterminate+label span.Checkmark:after {
+            content: "";
+            position: absolute;
+            display: block;
+            left: 5px;
+            top: 10px;
+            width: 15px;
+            height: 5px;
+            background-color: #FFF;
+        }
+
+        input[type=file] {
+            display: none;
+        }
+
+        input[type=text],
+        input[type=number] {
+            border-width: 0px 0px 2px 0px;
+            border-color: #888;
+            color: #222;
+            background-color: transparent;
+        }
+
+        input[type=number] {
+            text-align: right;
+            width: 100px;
+            -webkit-appearance: none;
+            -moz-appearance: none;
+            appearance: none;
+        }
+
+        input[type=number]::-webkit-outer-spin-button,
+        input[type=number]::-webkit-inner-spin-button {
+            -webkit-appearance: none;
+            appearance: none;
+            margin: 0;
+        }
+
+        input[type=text] {
+            width: 100%;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+
+        input[type="text"]:enabled:hover,
+        input[type="text"]:enabled:focus,
+        input[type="number"]:enabled:hover,
+        input[type="number"]:enabled:focus {
+            border-color: #222;
+        }
+
+        input[type="text"]:enabled:invalid,
+        input[type="number"]:enabled:invalid {
+            border-color: #ff1919;
+            background-color: rgba(234, 143, 143, 0.51);
+            color: #222;
+        }
+
+        textarea {
+            width: 100%;
+            height: 100px;
+            min-height: 100px;
+            max-height: 500px;
+            resize: vertical;
+            border: 2px #888 solid;
+            color: #222;
+            background-color: #EEE;
+            padding: 5px;
+        }
+
+        textarea:enabled:hover,
+        textarea:enabled:focus {
+            border-color: #444;
+            background-color: #FFF;
+        }
+
+        input[type="button"],
+        input[type="submit"] {
+            text-align: center;
+            border: 0px;
+            font-size: 0.8rem;
+            width: 100px;
+            height: 35px;
+            margin: 2px 5px 2px 0px;
+            -webkit-appearance: none;
+            -moz-appearance: none;
+            appearance: none;
+        }
+
+        input[type="button"] {
+            background-color: #CCC;
+            color: #444;
+            border: 1px #AAA solid;
+        }
+
+        input[type="button"]:enabled:hover,
+        input[type="button"]:enabled:active {
+            background-color: #AAA;
+            box-shadow: 0px 0px 3px #888;
+            color: #FFF;
+        }
+
+        input[type="submit"] {
+            background-color: #3399FF;
+            color: #FFF;
+            border: 1px #0066CC solid;
+        }
+
+        input[type="submit"]:enabled:hover,
+        input[type="submit"]:enabled:active {
+            background-color: #0066CC;
+            box-shadow: 0px 0px 3px #888;
+        }
+
+        input[type="button"]:disabled,
+        input[type="submit"]:disabled {
+            opacity: 0.2;
+        }
+
+        input.TextRadio {
+            display: none;
+        }
+
+        input.TextRadio+label {
+            display: block;
+            margin: 0;
+            padding: 10px 20px;
+            background-color: transparent;
+        }
+
+        input.TextRadio:enabled+label:hover {
+            background-color: #DDD;
+        }
+
+        input.TextRadio:enabled:checked+label {
+            background-color: #b5d7fb;
+        }
+
+        input.TextRadio:disabled+label {
+            opacity: 0.3;
+        }
+
+        table.RadioDescription {
+            border: 1px #CCC solid;
+            background-color: #FFF;
+            table-layout: fixed;
+        }
+
+        table.RadioDescription td {
+            vertical-align: text-top;
+            text-align: left;
+        }
+
+        table.RadioDescription td:nth-child(1) {
+            border-right: 1px #CCC solid;
+            width: 30%;
+        }
+
+        table.RadioDescription td:nth-child(2) {
+            padding: 0px 20px;
+        }
+
+        table.RadioDescription td:nth-child(2) p {
+            font-size: 0.9em;
+        }
+
+        div.RadioDescription_Content {
+            margin: 10px 0px;
+            overflow: auto;
+        }
+
+        /* Main Layout with Quick Configs */
+        #MainContainer {
+            display: flex;
+            flex-direction: row;
+            min-height: 100vh;
+            padding-bottom: 60px;
+        }
+
+        #EditorWrapper {
+            flex: 1;
+            min-width: 0;
+        }
+
+        #QuickConfigsPanel {
+            width: 280px;
+            background-color: rgba(255, 255, 255, 0.7);
+            border-left: 1px solid #CCC;
+            padding: 20px 15px;
+            position: sticky;
+            top: 0;
+            height: 100vh;
+            overflow-y: auto;
+        }
+
+        #QuickConfigsPanel h3 {
+            margin: 0 0 5px 0;
+            font-size: 1.1rem;
+            font-weight: normal;
+            color: #333;
+        }
+
+        #QuickConfigsPanel .panelDesc {
+            font-size: 0.75em;
+            color: #666;
+            margin-bottom: 15px;
+        }
+
+        .QuickConfigItem {
+            display: flex;
+            align-items: flex-start;
+            padding: 12px;
+            margin-bottom: 8px;
+            background-color: #FFF;
+            border: 1px solid #DDD;
+            border-radius: 4px;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .QuickConfigItem:hover {
+            background-color: #f0f8ff;
+            border-color: #3399FF;
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+        }
+
+        .QuickConfigItemHighlight {
+            background-color: #e8f4e8;
+            border-color: #4CAF50;
+        }
+
+        .QuickConfigItemHighlight:hover {
+            background-color: #d4edda;
+            border-color: #45a049;
+        }
+
+        .QuickConfigIcon {
+            font-size: 1.5em;
+            margin-right: 10px;
+            line-height: 1;
+        }
+
+        .QuickConfigInfo {
+            flex: 1;
+            min-width: 0;
+        }
+
+        .QuickConfigName {
+            font-weight: 500;
+            font-size: 0.9em;
+            color: #333;
+            margin-bottom: 3px;
+        }
+
+        .QuickConfigDesc {
+            font-size: 0.75em;
+            color: #666;
+            line-height: 1.3;
+        }
+
+        table.EditorTable {
+            padding: 20px 10px 100px 10px;
+            max-width: 1000px;
+            margin-left: auto;
+            margin-right: auto;
+        }
+
+        table.EditorTable>tbody>tr>td {
+            padding: 10px;
+            vertical-align: top;
+        }
+
+        table.EditorTable>tbody>tr>td:nth-child(1) {
+            font-weight: bold;
+            text-align: right;
+            width: 20%;
+        }
+
+        table.EditorTable tr.EditorRowErr td:nth-child(1) {
+            color: #ff1919;
+        }
+
+        table.Footer,
+        table.FooterRed {
+            position: fixed;
+            bottom: 0;
+            width: 100%;
+            height: auto;
+            padding: 10px 15px;
+            font-size: 0.8em;
+            z-index: 50;
+        }
+
+        table.Footer {
+            border-top: 1px #888 solid;
+            background-color: rgba(240, 240, 240, 0.95);
+            color: #000;
+        }
+
+        table.FooterRed {
+            border-top: 1px #ff1919 solid;
+            background-color: rgba(242, 172, 172, 0.95);
+            color: #ff1919;
+        }
+
+        table.Footer td:nth-child(2),
+        table.FooterRed td:nth-child(2) {
+            text-align: right;
+        }
+
+        div.MessageBox {
+            font-weight: bold;
+            padding: 10px 20px 10px 15px;
+            margin-bottom: 10px;
+        }
+
+        div.MessageBox p {
+            margin: 5px 0px;
+            font-size: 0.8em;
+            font-weight: normal;
+        }
+
+        div#AlertList {
+            position: fixed;
+            top: 60px;
+            right: 280px;
+            width: 100%;
+            max-width: 400px;
+            padding: 10px;
+            z-index: 100;
+        }
+
+        div#AlertList div.MessageBox {
+            box-shadow: 0px 0px 10px #888;
+        }
+
+        div.FloatBoxBackground {
+            position: fixed;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(150, 150, 150, 0.50);
+            z-index: 200;
+        }
+
+        form.FloatBox {
+            position: fixed;
+            top: 70px;
+            left: 0;
+            right: 280px;
+            margin: auto;
+            width: 100%;
+            max-width: 650px;
+            max-height: min-content;
+            padding: 20px;
+            background-color: #FFF;
+            box-shadow: 0px 0px 10px #888;
+            z-index: 201;
+        }
+
+        form.FloatBox.Hidden {
+            opacity: 0;
+            display: none;
+        }
+
+        p.FloatBoxFooter {
+            text-align: right;
+            margin: 10px -5px 0px 0px;
+        }
+
+        noscript {
+            display: block;
+            margin: 20px 0px;
+            color: #ff1919;
+            font-weight: bold;
+        }
+
+        div.TableContainer {
+            border: 2px #888 solid;
+            margin-bottom: 12px;
+            font-size: 0.9em;
+            background: #FFF;
+            height: 150px;
+            min-height: 150px;
+            max-height: 500px;
+            max-width: 100%;
+            overflow: auto;
+            resize: vertical;
+        }
+
+        div.TableContainer:hover {
+            border: 2px #444 solid;
+        }
+
+        div.TableContainer thead tr td {
+            background-color: #CCC;
+        }
+
+        div.TableContainer tr {
+            min-width: 100%;
+        }
+
+        div.TableContainer tr:hover {
+            background-color: #EEE;
+        }
+
+        div.TableContainer td {
+            padding: 5px;
+        }
+
+        table#Editor_MappedFoldersOthers_Table td:nth-child(1) {
+            width: 35px;
+            height: 35px;
+            vertical-align: text-top;
+        }
+
+        table#Editor_MappedFoldersOthers_Table label {
+            padding: 0;
+            margin: 0;
+            min-width: 0;
+        }
+
+        table#Editor_MappedFoldersOthers_Table td:not(:first-child) {
+            width: calc(50% - 30px);
+        }
+
+        select#LanguageSelector {
+            position: fixed;
+            top: 10px;
+            right: 295px;
+            z-index: 100;
+            padding: 5px 10px;
+            border: 1px solid #888;
+            background-color: #FFF;
+            font-size: 0.9em;
+        }
+
+        select#LanguageSelector:hover {
+            border-color: #444;
+        }
+
+        @media only screen and (max-width: 900px) {
+            #QuickConfigsPanel {
+                display: none;
+            }
+
+            div#AlertList {
+                right: 0;
+            }
+
+            form.FloatBox {
+                right: 0;
+            }
+
+            select#LanguageSelector {
+                right: 10px;
+            }
+        }
+
+        @media only screen and (min-width: 600px) {
+            table.EditorTable>tbody>tr>td {
+                padding-left: 25px;
+                padding-right: 25px;
+            }
+
+            table.EditorTable>tbody>tr>td:nth-child(1) {
+                border-right: 3px solid #CCC;
+                color: #666;
+            }
+
+            table.EditorTable>tbody>tr:hover:not(.EditorRowErr)>td:nth-child(1) {
+                border-right: 3px solid #444;
+                color: #000;
+            }
+
+            table.EditorTable tr.EditorRowErr td:nth-child(1) {
+                border-right: 3px solid #ff1919;
+            }
+        }
+    </style>
 </head>
+
 <body>
     <select id="LanguageSelector" onchange="setLanguage(this.value)">
         <option value="en">English</option>
         <option value="zh">中文</option>
     </select>
-    <form id="Editor" action="javascript:DownloadFile()">
-        <table class="EditorTable">
-            <tr id="EditorRow_Filename">
-                <td data-i18n="filename">Filename</td>
-                <td>
-                    <input type="text" id="Editor_Input_Filename" class="PreservedInput" />
-                </td>
-            </tr>
-            <tr id="EditorRow_Template">
-                <td data-i18n="template">Template</td>
-                <td>
-                    <span id="Editor_TemplateName"></span><br />
-                    <input type="button" data-i18n="change" value="Change" onclick="javascript:ShowFloatBox('Templates')" /><input type="button" data-i18n="reset" value="Reset" onclick="javascript:ShowFloatBox('Reset')" />
-                </td>
-            </tr>
-            <tr id="EditorRow_Graphics">
-                <td data-i18n="graphics">Graphics</td>
-                <td>
-                    <input type="Checkbox" id="Editor_Input_vGPU" />
-                    <label for="Editor_Input_vGPU">
-                        <span class="Checkmark"></span>
-                        <span data-i18n="enableVGpu">Enable vGPU</span>
-                        <span class="h6span" data-i18n="enableVGpuDesc">Enable hardware acceleration in Sandbox.</span>
-                    </label>
-                </td>
-            </tr>
-            <tr id="EditorRow_Memory">
-                <td data-i18n="memory">Memory</td>
-                <td>
-                    <input type="number" id="Editor_Input_MemoryInMB" data-i18n-placeholder="placeholderAuto" placeholder="Auto" min="1" /> <span data-i18n="memoryUnit">MB</span>
-                    <h6 data-i18n="memoryDesc">Maximum Sandbox memory usage (actual memory usage may exceed this amount if needed to boot the Sandbox).</h6>
-                </td>
-            </tr>
-            <tr id="EditorRow_Network">
-                <td data-i18n="network">Network</td>
-                <td>
-                	<input type="Checkbox" id="Editor_Input_Networking" />
-                    <label for="Editor_Input_Networking">
-                        <span class="Checkmark"></span>
-                        <span data-i18n="connectNetwork">Connect Sandbox to Network</span>
-                        <span class="h6span" data-i18n="connectNetworkDesc">Enable networking in Sandbox via Host's default NAT switch.</span>
-                    </label>
-                </td>
-            </tr>
-            <tr id="EditorRow_SharedResources">
-                <td data-i18n="sharedResources">Shared Resources</td>
-                <td>
-                    <span data-i18n="sharedResourcesDesc">Sandbox will share Host's:</span><br /><br />
-                    <input type="Checkbox" id="Editor_Input_AudioInput" />
-                    <label for="Editor_Input_AudioInput">
-                        <span class="Checkmark"></span>
-                        <span data-i18n="microphones">Microphone(s)</span>
-                    </label>
-                	<input type="Checkbox" id="Editor_Input_VideoInput" />
-                    <label for="Editor_Input_VideoInput">
-                        <span class="Checkmark"></span>
-                        <span data-i18n="cameras">Camera(s)</span>
-                    </label>
-                    <input type="Checkbox" id="Editor_Input_PrinterRedirection" />
-                    <label for="Editor_Input_PrinterRedirection">
-                        <span class="Checkmark"></span>
-                        <span data-i18n="printers">Printer(s)</span>
-                    </label>
-                    <input type="Checkbox" id="Editor_Input_ClipboardRedirection" />
-                    <label for="Editor_Input_ClipboardRedirection">
-                        <span class="Checkmark"></span>
-                        <span data-i18n="clipboard">Clipboard</span>
-                        <span class="h6span" data-i18n="clipboardDesc">Allow copy-and-paste between the Sandbox and the Host.<br />If <a href="#Editor_Input_ProtectedClient">Protected Client</a> is also enabled, you can only copy-and-paste text (but not files).</span>
-                    </label>
-                </td>
-            </tr>
-            <tr id="EditorRow_MappedUserFolders">
-                <td data-i18n="mappedUserFolders">Mapped User Folders</td>
-                <td>
-                    <label>
-                        <span data-i18n="homeDirectory">Home Directory:</span><br />
-                        <input type="text" id="Editor_Input_HomeDirectory" class="PreservedInput" />
-                        <span class="h6span" data-i18n="homeDirectoryDesc">By default, your Home Directory is "C:\Users\{Your Username}".<br />To check, open Command Prompt and type "echo %userprofile%" (<a href="https://github.com/leestevetk/WSBEditor/wiki/Home-Directory" target="_blank">learn more</a>).</span>
-                    </label>
-                    <br />
-                    <input type="Checkbox" name="Editor_Input_MappedUserFolders" id="Editor_Input_MappedUserFolders_Desktop" value="Desktop" class="TristateCheckbox" />
-                    <label for="Editor_Input_MappedUserFolders_Desktop">
-                        <span class="Checkmark"></span>
-                        <span data-i18n="desktop">Desktop</span>
-                        <span class="h6span" id="Editor_Input_MappedUserFolders_Desktop_Notes"></span>
-                    </label>
-                    <input type="Checkbox" name="Editor_Input_MappedUserFolders" id="Editor_Input_MappedUserFolders_Downloads" value="Downloads" class="TristateCheckbox" />
-                    <label for="Editor_Input_MappedUserFolders_Downloads">
-                        <span class="Checkmark"></span>
-                        <span data-i18n="downloads">Downloads</span>
-                        <span class="h6span" id="Editor_Input_MappedUserFolders_Downloads_Notes"></span>
-                    </label>
-                    <input type="Checkbox" name="Editor_Input_MappedUserFolders" id="Editor_Input_MappedUserFolders_Documents" value="Documents" class="TristateCheckbox" />
-                    <label for="Editor_Input_MappedUserFolders_Documents">
-                        <span class="Checkmark"></span>
-                        <span data-i18n="documents">Documents</span>
-                        <span class="h6span" id="Editor_Input_MappedUserFolders_Documents_Notes"></span>
-                    </label>
-                    <input type="Checkbox" name="Editor_Input_MappedUserFolders" id="Editor_Input_MappedUserFolders_Pictures" value="Pictures" class="TristateCheckbox" />
-                    <label for="Editor_Input_MappedUserFolders_Pictures">
-                        <span class="Checkmark"></span>
-                        <span data-i18n="pictures">Pictures</span>
-                        <span class="h6span" id="Editor_Input_MappedUserFolders_Pictures_Notes"></span>
-                    </label>
-                    <input type="Checkbox" name="Editor_Input_MappedUserFolders" id="Editor_Input_MappedUserFolders_Music" value="Music" class="TristateCheckbox" />    
-                    <label for="Editor_Input_MappedUserFolders_Music">
-                        <span class="Checkmark"></span>
-                        <span data-i18n="music">Music</span>
-                        <span class="h6span" id="Editor_Input_MappedUserFolders_Music_Notes"></span>
-                    </label>
-                    <h6 data-i18n="mappedFoldersHint">Tap once to enable read/write access, tap again to make it read-only.</h6>
-                </td>
-            </tr>
-            <tr id="EditorRow_MappedFoldersOthers">
-                <td data-i18n="mappedFoldersOthers">Mapped Folders (Others)</td>
-                <td>
-                    <div class="TableContainer">
-                        <table class="BorderTable" id="Editor_MappedFoldersOthers_Table">
-                            <thead>
-                                <tr>
-                                    <td></td>
-                                    <td data-i18n="hostFolder">Host Folder</td>
-                                    <td data-i18n="sandboxFolder">Sandbox Folder</td>
-                                </tr>
-                            </thead>
-                            <tbody id="Editor_MappedFoldersOthers_Tbody">
-                                <tr>
-                                    <td>
-                                        <input type="Checkbox" name="MappedFoldersOthers" id="Editor_Input_MappedFoldersOthers_0" class="TristateCheckbox" />    
-                                        <label for="Editor_Input_MappedFoldersOthers_0"><span class="Checkmark"></span><span id="Editor_Input_MappedFoldersOthers_0_Notes" style="display:none"></span></label>
-                                    </td>
-                                    <td>
-                                        <input type="text" data-i18n-placeholder="hostFolder" placeholder="Host Folder" id="Editor_Input_MappedFoldersOthers_0_HostFolder" oninput="javascript:Editor_MappedFoldersOthers_Oninput(0)" onfocusout="javascript:Editor_MappedFoldersOthers_Onfocusout(0)" />
-                                    </td>
-                                    <td>
-                                        <input type="text" data-i18n-placeholder="sandboxFolder" placeholder="Sandbox Folder" id="Editor_Input_MappedFoldersOthers_0_SandboxFolder" oninput="javascript:Editor_MappedFoldersOthers_Oninput(0)" onfocusout="javascript:Editor_MappedFoldersOthers_Onfocusout(0)" />
-                                    </td>
-                                </tr>
-                            </tbody>
-                        </table>
-                    </div>
-                    <h6 data-i18n="mappedFoldersOthersHint">Tap once to enable read/write access, tap again to make it read-only.<br />If you do not specify a Sandbox folder, the folder will be mapped to Desktop in Sandbox by default.<br />Note: deselected folders will not appear in the configuration file generated.</h6>
-                </td>
-            </tr>
-            <tr id="EditorRow_Security">
-                <td data-i18n="security">Security</td>
-                <td>
-                	<input type="Checkbox" id="Editor_Input_ProtectedClient" />
-                    <label for="Editor_Input_ProtectedClient">
-                        <span class="Checkmark"></span>
-                        <span data-i18n="protectedClient">Enable Protected Client Mode</span>
-                        <span class="h6span" data-i18n="protectedClientDesc">Enable extra security mitigations to the RDP connection to Sandbox.</span>
-                    </label>
-                </td>
-            </tr>
-            <tr id="EditorRow_LogonCommands">
-                <td data-i18n="logonCommands">Logon Commands</td>
-                <td>
-                    <textarea id="Editor_Input_LogonCommand"></textarea>
-                    <h6 data-i18n="logonCommandsDesc">Put one command on each line. These commands will automatically be invoked as Sandbox user in the Sandbox after log-on.</h6>
-                </td>
-            </tr>
-            <tr id="EditorRow_Advanced">
-                <td data-i18n="advanced">Advanced</td>
-                <td>
-                	<a href="javascript:Editor_ShowAdvancedSettings()" id="Editor_AdvancedSettingsLink">
-                		<span data-i18n="showAdvanced">Show Advanced Settings</span>
-                		<span class="h6span" data-i18n="showAdvancedDesc">Configure AutoSave and other settings relating to how WSBEditor behaves.</span>
-                	</a>
-                	<div id="Editor_AdvancedSettings" style="display:none">
-						<input type="Checkbox" id="Editor_Input_PreserveEditorSettings" class="PreservedInput" checked="checked" />
-						<label for="Editor_Input_PreserveEditorSettings">
-							<span class="Checkmark"></span>
-							<span data-i18n="preserveSettings">Preserve Editor Settings</span>
-							<span class="h6span" data-i18n="preserveSettingsDesc">Preserve your WSBEditor settings (e.g. home directory path, recent folders, advanced settings) across sessions. This setting itself ("Preserve Editor Settings") will be preserved in any event.</span>
-						</label>
-						<input type="Checkbox" id="Editor_Input_AutoSave" class="PreservedInput" checked="checked" />
-						<label for="Editor_Input_AutoSave">
-							<span class="Checkmark"></span>
-							<span data-i18n="autoSave">Enable AutoSave</span>
-							<span class="h6span" data-i18n="autoSaveDesc">Automatically save the latest session to your browser. This allows you to resume your session when you open WSBEditor again, even if you do not download the configuration file. Disabling AutoSave will also delete any saved session.</span>
-						</label>
-						<input type="Checkbox" id="Editor_Input_EditorXML" class="PreservedInput" checked="checked" />
-						<label for="Editor_Input_EditorXML">
-							<span class="Checkmark"></span>
-							<span data-i18n="includeEditorInfo">Include Editor Information</span>
-							<span class="h6span" data-i18n="includeEditorInfoDesc">Generated file will include your selected template, home directory path and other information that can be loaded when you open the file with WSBEditor again.</span>
-						</label>
-					</div>
-                </td>
-            </tr>
-        </table>
-        <table class="Footer" id="Editor_Footer">
-            <tr>
-                <td id="Editor_Footer_Message"></td>
-                <td><input type="button" data-i18n="open" onclick="javascript:ShowFloatBox('Open')" value="Open" /><input type="submit" data-i18n="download" value="Download" id="Editor_Footer_DownloadButton" /></td>
-            </tr>
-        </table>
-    </form>
-    <div id="FloatBoxBackground" class="FloatBoxBackground"></div>
-    <form id="FloatBox_Welcome" class="FloatBox BlueBorder" action="javascript:FloatBox_Welcome_Submit()">
-        <h2 data-i18n="welcome">Welcome to WSBEditor!</h2>
-        <p data-i18n="welcomeDesc"><b>WSBEditor</b> is a web-based <a href="https://docs.microsoft.com/en-us/windows/security/threat-protection/windows-sandbox/windows-sandbox-overview" target="_blank">Windows Sandbox</a> configuration file (*.wsb) editor.</p>
-        <input type="Checkbox" id="FloatBox_Welcome_Input_Resume" disabled="disabled" />
-        <label for="FloatBox_Welcome_Input_Resume">
-            <span class="Checkmark"></span>
-            <span data-i18n="resumeSession">Resume Last Session</span>
-            <span class="h6span" id="FloatBox_Welcome_Input_Resume_Notes" data-i18n="noSession">No session available.</span>
-        </label>
-        <h6 data-i18n="warranty">This software comes with ABSOLUTELY NO WARRANTY.</h6>
-        <h6 data-i18n="gpl">By proceeding, you accept the <a href="https://www.gnu.org/licenses/gpl-3.0.txt" target="_blank">GNU General Public License</a>.</h6>
-        <h6 data-i18n="copyright">&copy; Copyright 2020 <a href="https://leesteve.tk/" target="_blank">Steve's Toolkit</a> (<a href="https://github.com/leestevetk/WSBEditor" target="_blank">GitHub</a>)</h6>
-        <noscript data-i18n="noScript">You must enable JavaScript to continue.</noscript>
-        <p class="FloatBoxFooter"><input type="submit" data-i18n="continue" value="Continue" id="FloatBox_Welcome_SubmitButton" disabled="disabled" /></p>
-    </form>
+
+    <div id="MainContainer">
+        <div id="EditorWrapper">
+            <form id="Editor" action="javascript:DownloadFile()">
+                <table class="EditorTable">
+                    <tr id="EditorRow_Filename">
+                        <td data-i18n="filename">Filename</td>
+                        <td>
+                            <input type="text" id="Editor_Input_Filename" class="PreservedInput" />
+                        </td>
+                    </tr>
+                    <tr id="EditorRow_Template">
+                        <td data-i18n="template">Template</td>
+                        <td>
+                            <span id="Editor_TemplateName"></span><br />
+                            <input type="button" data-i18n="change" value="Change"
+                                onclick="javascript:ShowFloatBox('Templates')" /><input type="button" data-i18n="reset"
+                                value="Reset" onclick="javascript:ShowFloatBox('Reset')" />
+                        </td>
+                    </tr>
+                    <tr id="EditorRow_Graphics">
+                        <td data-i18n="graphics">Graphics</td>
+                        <td>
+                            <input type="Checkbox" id="Editor_Input_vGPU" />
+                            <label for="Editor_Input_vGPU">
+                                <span class="Checkmark"></span>
+                                <span data-i18n="enableVGpu">Enable vGPU</span>
+                                <span class="h6span" data-i18n="enableVGpuDesc">Enable hardware acceleration in
+                                    Sandbox.</span>
+                            </label>
+                        </td>
+                    </tr>
+                    <tr id="EditorRow_Memory">
+                        <td data-i18n="memory">Memory</td>
+                        <td>
+                            <input type="number" id="Editor_Input_MemoryInMB" data-i18n-placeholder="placeholderAuto"
+                                placeholder="Auto" min="1" /> <span data-i18n="memoryUnit">MB</span>
+                            <h6 data-i18n="memoryDesc">Maximum Sandbox memory usage (actual memory usage may exceed this
+                                amount if needed to boot the Sandbox).</h6>
+                        </td>
+                    </tr>
+                    <tr id="EditorRow_Network">
+                        <td data-i18n="network">Network</td>
+                        <td>
+                            <input type="Checkbox" id="Editor_Input_Networking" />
+                            <label for="Editor_Input_Networking">
+                                <span class="Checkmark"></span>
+                                <span data-i18n="connectNetwork">Connect Sandbox to Network</span>
+                                <span class="h6span" data-i18n="connectNetworkDesc">Enable networking in Sandbox via
+                                    Host's default NAT switch.</span>
+                            </label>
+                        </td>
+                    </tr>
+                    <tr id="EditorRow_SharedResources">
+                        <td data-i18n="sharedResources">Shared Resources</td>
+                        <td>
+                            <span data-i18n="sharedResourcesDesc">Sandbox will share Host's:</span><br /><br />
+                            <input type="Checkbox" id="Editor_Input_AudioInput" />
+                            <label for="Editor_Input_AudioInput">
+                                <span class="Checkmark"></span>
+                                <span data-i18n="microphones">Microphone(s)</span>
+                            </label>
+                            <input type="Checkbox" id="Editor_Input_VideoInput" />
+                            <label for="Editor_Input_VideoInput">
+                                <span class="Checkmark"></span>
+                                <span data-i18n="cameras">Camera(s)</span>
+                            </label>
+                            <input type="Checkbox" id="Editor_Input_PrinterRedirection" />
+                            <label for="Editor_Input_PrinterRedirection">
+                                <span class="Checkmark"></span>
+                                <span data-i18n="printers">Printer(s)</span>
+                            </label>
+                            <input type="Checkbox" id="Editor_Input_ClipboardRedirection" />
+                            <label for="Editor_Input_ClipboardRedirection">
+                                <span class="Checkmark"></span>
+                                <span data-i18n="clipboard">Clipboard</span>
+                                <span class="h6span" data-i18n="clipboardDesc">Allow copy-and-paste between the Sandbox
+                                    and the Host.<br />If <a href="#Editor_Input_ProtectedClient">Protected Client</a>
+                                    is also enabled, you can only copy-and-paste text (but not files).</span>
+                            </label>
+                        </td>
+                    </tr>
+                    <tr id="EditorRow_MappedUserFolders">
+                        <td data-i18n="mappedUserFolders">Mapped User Folders</td>
+                        <td>
+                            <label>
+                                <span data-i18n="homeDirectory">Home Directory:</span><br />
+                                <input type="text" id="Editor_Input_HomeDirectory" class="PreservedInput" />
+                                <span class="h6span" data-i18n="homeDirectoryDesc">By default, your Home Directory is
+                                    "C:\Users\{Your Username}".<br />To check, open Command Prompt and type "echo
+                                    %userprofile%" (<a
+                                        href="https://github.com/leestevetk/WSBEditor/wiki/Home-Directory"
+                                        target="_blank">learn more</a>).</span>
+                            </label>
+                            <br />
+                            <input type="Checkbox" name="Editor_Input_MappedUserFolders"
+                                id="Editor_Input_MappedUserFolders_Desktop" value="Desktop" class="TristateCheckbox" />
+                            <label for="Editor_Input_MappedUserFolders_Desktop">
+                                <span class="Checkmark"></span>
+                                <span data-i18n="desktop">Desktop</span>
+                                <span class="h6span" id="Editor_Input_MappedUserFolders_Desktop_Notes"></span>
+                            </label>
+                            <input type="Checkbox" name="Editor_Input_MappedUserFolders"
+                                id="Editor_Input_MappedUserFolders_Downloads" value="Downloads"
+                                class="TristateCheckbox" />
+                            <label for="Editor_Input_MappedUserFolders_Downloads">
+                                <span class="Checkmark"></span>
+                                <span data-i18n="downloads">Downloads</span>
+                                <span class="h6span" id="Editor_Input_MappedUserFolders_Downloads_Notes"></span>
+                            </label>
+                            <input type="Checkbox" name="Editor_Input_MappedUserFolders"
+                                id="Editor_Input_MappedUserFolders_Documents" value="Documents"
+                                class="TristateCheckbox" />
+                            <label for="Editor_Input_MappedUserFolders_Documents">
+                                <span class="Checkmark"></span>
+                                <span data-i18n="documents">Documents</span>
+                                <span class="h6span" id="Editor_Input_MappedUserFolders_Documents_Notes"></span>
+                            </label>
+                            <input type="Checkbox" name="Editor_Input_MappedUserFolders"
+                                id="Editor_Input_MappedUserFolders_Pictures" value="Pictures"
+                                class="TristateCheckbox" />
+                            <label for="Editor_Input_MappedUserFolders_Pictures">
+                                <span class="Checkmark"></span>
+                                <span data-i18n="pictures">Pictures</span>
+                                <span class="h6span" id="Editor_Input_MappedUserFolders_Pictures_Notes"></span>
+                            </label>
+                            <input type="Checkbox" name="Editor_Input_MappedUserFolders"
+                                id="Editor_Input_MappedUserFolders_Music" value="Music" class="TristateCheckbox" />
+                            <label for="Editor_Input_MappedUserFolders_Music">
+                                <span class="Checkmark"></span>
+                                <span data-i18n="music">Music</span>
+                                <span class="h6span" id="Editor_Input_MappedUserFolders_Music_Notes"></span>
+                            </label>
+                            <h6 data-i18n="mappedFoldersHint">Tap once to enable read/write access, tap again to make it
+                                read-only.</h6>
+                        </td>
+                    </tr>
+                    <tr id="EditorRow_MappedFoldersOthers">
+                        <td data-i18n="mappedFoldersOthers">Mapped Folders (Others)</td>
+                        <td>
+                            <div class="TableContainer">
+                                <table class="BorderTable" id="Editor_MappedFoldersOthers_Table">
+                                    <thead>
+                                        <tr>
+                                            <td></td>
+                                            <td data-i18n="hostFolder">Host Folder</td>
+                                            <td data-i18n="sandboxFolder">Sandbox Folder</td>
+                                        </tr>
+                                    </thead>
+                                    <tbody id="Editor_MappedFoldersOthers_Tbody">
+                                        <tr>
+                                            <td>
+                                                <input type="Checkbox" name="MappedFoldersOthers"
+                                                    id="Editor_Input_MappedFoldersOthers_0" class="TristateCheckbox" />
+                                                <label for="Editor_Input_MappedFoldersOthers_0"><span
+                                                        class="Checkmark"></span><span
+                                                        id="Editor_Input_MappedFoldersOthers_0_Notes"
+                                                        style="display:none"></span></label>
+                                            </td>
+                                            <td>
+                                                <input type="text" data-i18n-placeholder="hostFolder"
+                                                    placeholder="Host Folder"
+                                                    id="Editor_Input_MappedFoldersOthers_0_HostFolder"
+                                                    oninput="javascript:Editor_MappedFoldersOthers_Oninput(0)"
+                                                    onfocusout="javascript:Editor_MappedFoldersOthers_Onfocusout(0)" />
+                                            </td>
+                                            <td>
+                                                <input type="text" data-i18n-placeholder="sandboxFolder"
+                                                    placeholder="Sandbox Folder"
+                                                    id="Editor_Input_MappedFoldersOthers_0_SandboxFolder"
+                                                    oninput="javascript:Editor_MappedFoldersOthers_Oninput(0)"
+                                                    onfocusout="javascript:Editor_MappedFoldersOthers_Onfocusout(0)" />
+                                            </td>
+                                        </tr>
+                                    </tbody>
+                                </table>
+                            </div>
+                            <h6 data-i18n="mappedFoldersOthersHint">Tap once to enable read/write access, tap again to
+                                make it read-only.<br />If you do not specify a Sandbox folder, the folder will be
+                                mapped to Desktop in Sandbox by default.<br />Note: deselected folders will not appear
+                                in the configuration file generated.</h6>
+                        </td>
+                    </tr>
+                    <tr id="EditorRow_Security">
+                        <td data-i18n="security">Security</td>
+                        <td>
+                            <input type="Checkbox" id="Editor_Input_ProtectedClient" />
+                            <label for="Editor_Input_ProtectedClient">
+                                <span class="Checkmark"></span>
+                                <span data-i18n="protectedClient">Enable Protected Client Mode</span>
+                                <span class="h6span" data-i18n="protectedClientDesc">Enable extra security mitigations
+                                    to the RDP connection to Sandbox.</span>
+                            </label>
+                        </td>
+                    </tr>
+                    <tr id="EditorRow_LogonCommands">
+                        <td data-i18n="logonCommands">Logon Commands</td>
+                        <td>
+                            <textarea id="Editor_Input_LogonCommand"></textarea>
+                            <h6 data-i18n="logonCommandsDesc">Put one command on each line. These commands will
+                                automatically be invoked as Sandbox user in the Sandbox after log-on.</h6>
+                        </td>
+                    </tr>
+                    <tr id="EditorRow_Advanced">
+                        <td data-i18n="advanced">Advanced</td>
+                        <td>
+                            <a href="javascript:Editor_ShowAdvancedSettings()" id="Editor_AdvancedSettingsLink">
+                                <span data-i18n="showAdvanced">Show Advanced Settings</span>
+                                <span class="h6span" data-i18n="showAdvancedDesc">Configure AutoSave and other settings
+                                    relating to how WSBEditor behaves.</span>
+                            </a>
+                            <div id="Editor_AdvancedSettings" style="display:none">
+                                <input type="Checkbox" id="Editor_Input_PreserveEditorSettings" class="PreservedInput"
+                                    checked="checked" />
+                                <label for="Editor_Input_PreserveEditorSettings">
+                                    <span class="Checkmark"></span>
+                                    <span data-i18n="preserveSettings">Preserve Editor Settings</span>
+                                    <span class="h6span" data-i18n="preserveSettingsDesc">Preserve your WSBEditor
+                                        settings (e.g. home directory path, recent folders, advanced settings) across
+                                        sessions. This setting itself ("Preserve Editor Settings") will be preserved in
+                                        any event.</span>
+                                </label>
+                                <input type="Checkbox" id="Editor_Input_AutoSave" class="PreservedInput"
+                                    checked="checked" />
+                                <label for="Editor_Input_AutoSave">
+                                    <span class="Checkmark"></span>
+                                    <span data-i18n="autoSave">Enable AutoSave</span>
+                                    <span class="h6span" data-i18n="autoSaveDesc">Automatically save the latest session
+                                        to your browser. This allows you to resume your session when you open WSBEditor
+                                        again, even if you do not download the configuration file. Disabling AutoSave
+                                        will also delete any saved session.</span>
+                                </label>
+                                <input type="Checkbox" id="Editor_Input_EditorXML" class="PreservedInput"
+                                    checked="checked" />
+                                <label for="Editor_Input_EditorXML">
+                                    <span class="Checkmark"></span>
+                                    <span data-i18n="includeEditorInfo">Include Editor Information</span>
+                                    <span class="h6span" data-i18n="includeEditorInfoDesc">Generated file will include
+                                        your selected template, home directory path and other information that can be
+                                        loaded when you open the file with WSBEditor again.</span>
+                                </label>
+                            </div>
+                        </td>
+                    </tr>
+                </table>
+                <table class="Footer" id="Editor_Footer">
+                    <tr>
+                        <td id="Editor_Footer_Message"></td>
+                        <td><input type="button" data-i18n="open" onclick="javascript:ShowFloatBox('Open')"
+                                value="Open" /><input type="submit" data-i18n="download" value="Download"
+                                id="Editor_Footer_DownloadButton" /></td>
+                    </tr>
+                </table>
+            </form>
+        </div>
+
+        <!-- Quick Configs Panel -->
+        <div id="QuickConfigsPanel">
+            <h3 data-i18n="quickConfigs">Quick Configs</h3>
+            <div class="panelDesc" data-i18n="quickConfigsDesc">Click to quickly load a configuration</div>
+            <div id="QuickConfigsList">
+                <!-- Configs will be loaded here dynamically -->
+            </div>
+        </div>
+    </div>
+
+    <div id="FloatBoxBackground" class="FloatBoxBackground Hidden"></div>
+
     <form id="FloatBox_Templates" class="FloatBox Hidden BlueBorder" action="javascript:FloatBox_Templates_Submit()">
         <h2 data-i18n="templates">Templates</h2>
         <table class="RadioDescription">
             <tr>
                 <td>
                     <div class="RadioDescription_Content">
-                        <input type="radio" name="FloatBox_Templates_Template" class="TextRadio" id="FloatBox_Templates_Template_0" value="0" checked="checked" /><label for="FloatBox_Templates_Template_0"><span data-i18n="templateWindowsDefault">Windows Default</span></label>
-                        <input type="radio" name="FloatBox_Templates_Template" class="TextRadio" id="FloatBox_Templates_Template_1" value="1" /><label for="FloatBox_Templates_Template_1"><span data-i18n="templateMoreSecureNoNet">More Secure</span><span class="h6span" data-i18n="templateMoreSecureNoNetSub">(without Networking)</span></label>
-                        <input type="radio" name="FloatBox_Templates_Template" class="TextRadio" id="FloatBox_Templates_Template_2" value="2" /><label for="FloatBox_Templates_Template_2"><span data-i18n="templateMoreSecureWithNet">More Secure</span><span class="h6span" data-i18n="templateMoreSecureWithNetSub">(with Networking)</span></label>
-                        <input type="radio" name="FloatBox_Templates_Template" class="TextRadio" id="FloatBox_Templates_Template_3" value="3" /><label for="FloatBox_Templates_Template_3"><span data-i18n="templateMoreFunctions">More Functions</span></label>
-                        <input type="radio" name="FloatBox_Templates_Template" class="TextRadio" id="FloatBox_Templates_Template_4" value="4" /><label for="FloatBox_Templates_Template_4"><span data-i18n="templateTestDownloads">Test Downloads</span></label>
+                        <input type="radio" name="FloatBox_Templates_Template" class="TextRadio"
+                            id="FloatBox_Templates_Template_0" value="0" checked="checked" /><label
+                            for="FloatBox_Templates_Template_0"><span data-i18n="templateWindowsDefault">Windows
+                                Default</span></label>
+                        <input type="radio" name="FloatBox_Templates_Template" class="TextRadio"
+                            id="FloatBox_Templates_Template_1" value="1" /><label
+                            for="FloatBox_Templates_Template_1"><span data-i18n="templateMoreSecureNoNet">More
+                                Secure</span><span class="h6span" data-i18n="templateMoreSecureNoNetSub">(without
+                                Networking)</span></label>
+                        <input type="radio" name="FloatBox_Templates_Template" class="TextRadio"
+                            id="FloatBox_Templates_Template_2" value="2" /><label
+                            for="FloatBox_Templates_Template_2"><span data-i18n="templateMoreSecureWithNet">More
+                                Secure</span><span class="h6span" data-i18n="templateMoreSecureWithNetSub">(with
+                                Networking)</span></label>
+                        <input type="radio" name="FloatBox_Templates_Template" class="TextRadio"
+                            id="FloatBox_Templates_Template_3" value="3" /><label
+                            for="FloatBox_Templates_Template_3"><span data-i18n="templateMoreFunctions">More
+                                Functions</span></label>
+                        <input type="radio" name="FloatBox_Templates_Template" class="TextRadio"
+                            id="FloatBox_Templates_Template_4" value="4" /><label
+                            for="FloatBox_Templates_Template_4"><span data-i18n="templateTestDownloads">Test
+                                Downloads</span></label>
                     </div>
                 </td>
                 <td>
@@ -1719,30 +2385,41 @@
                 </td>
             </tr>
         </table>
-        <p class="FloatBoxFooter"><input type="submit" data-i18n="apply" value="Apply" /><input type="button" data-i18n="cancel" onclick="javascript:FloatBox_Templates_Cancel()" value="Cancel" /></p>
+        <p class="FloatBoxFooter"><input type="submit" data-i18n="apply" value="Apply" /><input type="button"
+                data-i18n="cancel" onclick="javascript:FloatBox_Templates_Cancel()" value="Cancel" /></p>
     </form>
     <form id="FloatBox_Reset" class="FloatBox Hidden YellowBorder" action="javascript:FloatBox_Reset_Submit()">
         <h2 data-i18n="resetTitle">Reset to Template Defaults</h2>
-        <p data-i18n="resetDesc">This will revert all changes and reset all settings to their default values in the <b id="FloatBox_Reset_TemplateName"></b> template.</p>
+        <p data-i18n="resetDesc">This will revert all changes and reset all settings to their default values in the <b
+                id="FloatBox_Reset_TemplateName"></b> template.</p>
         <h6 data-i18n="resetHint">This will also empty your Mapped Folders (Others) list.</h6>
-        <p class="FloatBoxFooter"><input type="submit" data-i18n="reset" value="Reset" /><input type="button" data-i18n="cancel" value="Cancel" onclick="javascript:HideFloatBox('Reset')" /></p>
+        <p class="FloatBoxFooter"><input type="submit" data-i18n="reset" value="Reset" /><input type="button"
+                data-i18n="cancel" value="Cancel" onclick="javascript:HideFloatBox('Reset')" /></p>
     </form>
-    <form id="FloatBox_Open" class="FloatBox Hidden BlueBorder" action="javascript:document.getElementById('FloatBox_Open_Input').click()">
+    <form id="FloatBox_Open" class="FloatBox Hidden BlueBorder"
+        action="javascript:document.getElementById('FloatBox_Open_Input').click()">
         <h2 data-i18n="openFileTitle">Open Configuration File</h2>
         <p data-i18n="openFileWarning"><b>This will overwrite any changes you have made on this page.</b></p>
-        <h6 data-i18n="openFileHint1">To keep your changes, <a href="javascript:DownloadFile()">download a copy</a>.</h6>
+        <h6 data-i18n="openFileHint1">To keep your changes, <a href="javascript:DownloadFile()">download a copy</a>.
+        </h6>
         <h6 data-i18n="openFileHint2">Choose your configuration file (*.wsb) to continue.</h6>
         <input type="file" id="FloatBox_Open_Input" accept=".wsb" onchange="javascript:OpenWSBFile()" />
-        <p class="FloatBoxFooter"><input type="submit" data-i18n="choose" value="Choose" /><input type="button" data-i18n="cancel" value="Cancel" onclick="javascript:HideFloatBox('Open')" /></p>
+        <p class="FloatBoxFooter"><input type="submit" data-i18n="choose" value="Choose" /><input type="button"
+                data-i18n="cancel" value="Cancel" onclick="javascript:HideFloatBox('Open')" /></p>
     </form>
-    <form id="FloatBox_OpenWSBWarnings" class="FloatBox Hidden YellowBorder" action="javascript:HideFloatBox('OpenWSBWarnings')">
+    <form id="FloatBox_OpenWSBWarnings" class="FloatBox Hidden YellowBorder"
+        action="javascript:HideFloatBox('OpenWSBWarnings')">
         <h2 data-i18n="fileWarnings">File Warnings</h2>
-        <p data-i18n="fileWarningsDesc">We encountered some warnings while opening <b id="FloatBox_OpenWSBWarnings_Filename"></b>:</p>
-        <div class="TableContainer"><table id="FloatBox_OpenWSBWarnings_Table"></table></div>
+        <p data-i18n="fileWarningsDesc">We encountered some warnings while opening <b
+                id="FloatBox_OpenWSBWarnings_Filename"></b>:</p>
+        <div class="TableContainer">
+            <table id="FloatBox_OpenWSBWarnings_Table"></table>
+        </div>
         <h6 data-i18n="fileWarningsHint">Other configuration options in the file have been loaded onto the editor.</h6>
         <p class="FloatBoxFooter"><input type="submit" data-i18n="continue" value="Continue" /></p>
     </form>
     <div id="AlertList">
     </div>
 </body>
+
 </html>

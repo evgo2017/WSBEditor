@@ -1,0 +1,16 @@
+<Configuration>
+    <vGPU>Enable</vGPU>
+    <Networking>Enable</Networking>
+    <MemoryInMB>4096</MemoryInMB>
+    <LogonCommand>
+        <Command>cmd /c start msedge</Command>
+    </LogonCommand>
+    <WSBEditorConfig>
+        <EditorVersion>0.5.0</EditorVersion>
+        <EditorRelease>20260204</EditorRelease>
+        <TemplateID>4</TemplateID>
+        <DownloadTime>1770004923645</DownloadTime>
+        <HomeDirectory>C:\Users\Public</HomeDirectory>
+        <Language>zh</Language>
+    </WSBEditorConfig>
+</Configuration>

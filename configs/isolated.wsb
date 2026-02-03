@@ -1,0 +1,14 @@
+<Configuration>
+    <vGPU>Disable</vGPU>
+    <Networking>Disable</Networking>
+    <MemoryInMB>4096</MemoryInMB>
+    <ProtectedClient>Enable</ProtectedClient>
+    <WSBEditorConfig>
+        <EditorVersion>0.5.0</EditorVersion>
+        <EditorRelease>20260204</EditorRelease>
+        <TemplateID>1</TemplateID>
+        <DownloadTime>1770004923645</DownloadTime>
+        <HomeDirectory></HomeDirectory>
+        <Language>zh</Language>
+    </WSBEditorConfig>
+</Configuration>
