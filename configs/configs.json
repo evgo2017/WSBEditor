@@ -1,0 +1,115 @@
+{
+  "configs": [
+    {
+      "id": "last_session",
+      "type": "special",
+      "name": {
+        "en": "Resume Last Session",
+        "zh": "恢复上次会话"
+      },
+      "description": {
+        "en": "Pick up exactly where you left off with all settings preserved.",
+        "zh": "保留所有配置，从上次离开的地方继续。"
+      },
+      "icon": "🕐"
+    },
+    {
+      "id": "sandbox_local",
+      "type": "file",
+      "name": {
+        "en": "Local File Exchange",
+        "zh": "网盘资源下载"
+      },
+      "description": {
+        "en": "Map a host folder for bidirectional file transfer; ideal for large downloads.",
+        "zh": "映射主机文件夹进行双向文件传输，适合大文件下载存储。"
+      },
+      "icon": "💾",
+      "file": "configs/cloud-download.wsb"
+    },
+    {
+      "id": "readonly_share",
+      "type": "file",
+      "name": {
+        "en": "Secure Doc Review",
+        "zh": "安全文档审阅"
+      },
+      "description": {
+        "en": "Check documents in a read-only mapped folder to prevent changes to host files.",
+        "zh": "在只读映射的文件夹中查看文档，防止沙盒改写主机原始文件。"
+      },
+      "icon": "🔒",
+      "file": "configs/readonly-share.wsb"
+    },
+    {
+      "id": "dev_test",
+      "type": "file",
+      "name": {
+        "en": "Dev & Software Test",
+        "zh": "开发与软件测试"
+      },
+      "description": {
+        "en": "vGPU + Network + Clipboard. High performance for running complex software.",
+        "zh": "启用硬件加速、网络与剪贴板。适合运行和测试高性能软件。"
+      },
+      "icon": "🔧",
+      "file": "configs/dev-test.wsb"
+    },
+    {
+      "id": "isolated",
+      "type": "file",
+      "name": {
+        "en": "Untrusted File Lab",
+        "zh": "可疑文件实验室"
+      },
+      "description": {
+        "en": "Maximum security: no network, no sharing, protected client. For malware analysis.",
+        "zh": "最高安全：无网络、无共享且开启 RDP 保护。用于分析可疑程序。"
+      },
+      "icon": "🛡️",
+      "file": "configs/isolated.wsb"
+    },
+    {
+      "id": "browser_download",
+      "type": "file",
+      "name": {
+        "en": "Risky Web Browsing",
+        "zh": "高风险网页浏览"
+      },
+      "description": {
+        "en": "Isolated browsing with Edge; downloaded files automatically sync to host downloads.",
+        "zh": "在隔离环境中使用 Edge 冲浪；下载的文件将自动同步至主机目录。"
+      },
+      "icon": "🌐",
+      "file": "configs/browser-download.wsb"
+    },
+    {
+      "id": "app_installer",
+      "type": "file",
+      "name": {
+        "en": "Clean App Installer",
+        "zh": "纯净软件安装器"
+      },
+      "description": {
+        "en": "Install apps from host library to sandbox; prevents host registry pollution.",
+        "zh": "从主机软件库安装程序到沙盒，防止捆绑软件污染宿主机。"
+      },
+      "icon": "📦",
+      "file": "configs/app-installer.wsb"
+    },
+    {
+      "id": "windows_default",
+      "type": "template",
+      "name": {
+        "en": "Windows Default",
+        "zh": "Windows 默认"
+      },
+      "description": {
+        "en": "Default Windows Sandbox settings",
+        "zh": "默认 Windows 沙盒设置"
+      },
+      "icon": "🪟",
+      "templateId": 0
+    }
+  ]
+}
