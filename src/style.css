@@ -13,6 +13,7 @@
     --bg-body: #f1f3f9;
     --bg-card: #ffffff;
     --border-color: #e2e8f0;
+    --focus-ring: 0 0 0 3px rgba(67, 97, 238, 0.18);
     --shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
     --shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
 }
@@ -229,12 +230,13 @@ body {
 .input-with-suffix:focus-within {
     border-color: var(--primary-color);
     background: white;
-    box-shadow: 0 0 0 4px rgba(67, 97, 238, 0.1);
+    box-shadow: var(--focus-ring);
 }
 
 .input-with-suffix input[type="text"],
 .input-with-suffix input[type="number"] {
     border: none;
+    outline: none;
     background: transparent;
     box-shadow: none;
     flex: 1;
@@ -275,13 +277,26 @@ select {
     background: var(--secondary-color);
     font-family: inherit;
     width: 100%;
+    outline: none;
 }
 
-input:focus,
-textarea:focus {
+input[type="text"]:focus,
+input[type="number"]:focus,
+textarea:focus,
+select:focus {
     border-color: var(--primary-color);
     background: white;
-    box-shadow: 0 0 0 4px rgba(67, 97, 238, 0.1);
+    box-shadow: var(--focus-ring);
+}
+
+input[type="checkbox"] {
+    accent-color: var(--primary-color);
+}
+
+input[type="checkbox"]:focus-visible {
+    outline: 2px solid rgba(67, 97, 238, 0.35);
+    outline-offset: 2px;
+    border-radius: 4px;
 }
 
 /* Tables */

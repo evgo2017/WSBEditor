@@ -479,7 +479,8 @@ watch(state, () => {
               <div class="section-title">📜 {{ t('logonCommands') }}</div>
               <div class="form-group">
                   <textarea v-model="state.LogonCommand" rows="4"
-                      :placeholder="t('logonCommandsDesc')"></textarea>
+                      :placeholder="t('placeholderLogonCommand')"></textarea>
+                  <span class="h6span">{{ t('logonCommandsDesc') }}</span>
               </div>
           </div>
 
