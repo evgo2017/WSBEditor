@@ -11,7 +11,36 @@
 
 ### 与原项目的差异
 - 增加了多语言，补充了中文
-- 
+- **配置外置化**：所有的“常用配置”现在都存储在 `configs/` 目录下（`.json` 和 `.wsb` 文件），更方便通过 Git 进行版本管理和阅读。
+## 开发与构建
+
+本项目已升级为现代化的 **Vue SFC (Single File Component)** 开发模式，并支持自动化编译打包。
+
+### 目录结构
+- **`src/`**：Vue 源码目录。
+  - `App.vue`：主要业务逻辑与页面模板。
+  - `style.css`：核心样式表。
+  - `components/`：可复用的 Vue 组件。
+- **`dist/`**：构建后的产物，包含最终的单文件 HTML。
+
+### 开发流程
+
+1. **安装依赖**：
+   ```bash
+   npm install
+   ```
+
+2. **本地开发预览**：
+   ```bash
+   npm run dev
+   ```
+
+3. **构建发布版**：
+   运行以下命令，会自动完成 Vue 编译、资源内联以及数据打包：
+   ```bash
+   npm run build
+   ```
+   完成后，**`dist/index.html`** 即为最终的单文件版本。
 **[Launch the latest version of WSBEditor](https://leestevetk.github.io/WSBEditor/WSBEditor-Latest.html).**
 
 WSBEditor is a web-based [Windows Sandbox](https://docs.microsoft.com/en-us/windows/security/threat-protection/windows-sandbox/windows-sandbox-overview) configuration file (*.wsb) editor.

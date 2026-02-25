@@ -2,6 +2,9 @@
     "en": {
         "quickConfigs": "Quick Configs",
         "quickConfigsDesc": "Switch between configurations",
+        "appTitle": "WSBEditor",
+        "appFullName": "Windows Sandbox Configuration Editor",
+        "appSubtitle": "A lightweight, web-based tool for creating and editing Windows Sandbox configuration files (*.wsb).",
         "filename": "Filename",
         "graphics": "Graphics",
         "network": "Network",
@@ -33,11 +36,19 @@
         "placeholderAuto": "Auto",
         "placeholderHomeDir": "C:\\Users\\Public",
         "configLoaded": "Configuration Loaded",
-        "templateApplied": "Template Applied"
+        "templateApplied": "Template Applied",
+        "footerIntro": "WSBEditor is a lightweight, web-based tool for creating and editing Windows Sandbox configuration files (*.wsb).",
+        "footerOriginal": "Original Project",
+        "footerCurrent": "This Project",
+        "footerLinkOnline": "Online",
+        "footerLinkGithub": "GitHub"
     },
     "zh": {
         "quickConfigs": "常用配置",
         "quickConfigsDesc": "在预设间快速切换",
+        "appTitle": "WSBEditor",
+        "appFullName": "Windows Sandbox 沙盒配置编辑器",
+        "appSubtitle": "是一个轻量级的 Web 工具，用于创建和编辑 Windows 沙盒配置文件 (*.wsb)。",
         "filename": "文件名",
         "graphics": "图形性能",
         "network": "网络连接",
@@ -69,6 +80,11 @@
         "placeholderAuto": "自动分配",
         "placeholderHomeDir": "例如 C:\\Users\\Public",
         "configLoaded": "配置已加载",
-        "templateApplied": "模板已应用"
+        "templateApplied": "模板已应用",
+        "footerIntro": "WSBEditor 是一个轻量级的 Web 工具，用于创建和编辑 Windows 沙盒配置文件 (*.wsb)。",
+        "footerOriginal": "原始项目",
+        "footerCurrent": "当前项目",
+        "footerLinkOnline": "在线",
+        "footerLinkGithub": "GitHub"
     }
 }

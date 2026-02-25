@@ -1,5 +1,5 @@
 <script setup>
-import { ref, reactive, onMounted } from 'vue'
+import { ref, reactive, onMounted, watch } from 'vue'
 import { useI18n } from 'vue-i18n'
 import TristateBox from './components/TristateBox.vue'
 
@@ -20,13 +20,69 @@ const getWsbContentByPath = (filePath) => {
 }
 
 const editorVersion = "0.7.0"
+const stateCacheKey = 'WSBEditor_StateCache'
+
+const createEmptyMappedFolder = () => ({ enabled: false, host: '', sandbox: '', readonly: false })
+
+const normalizeFilenameBase = (value) => {
+    const cleaned = String(value || '')
+        .trim()
+        .replace(/\.wsb$/i, '')
+        .replace(/[\\/:*?"<>|]/g, '')
+    return cleaned || 'Sandbox'
+}
+
+const normalizeMappedFolders = (folders) => {
+    const normalized = Array.isArray(folders)
+        ? folders.map((folder) => {
+            const host = folder?.host || ''
+            const sandbox = folder?.sandbox || ''
+            return {
+                enabled: !!folder?.enabled && !!host,
+                host,
+                sandbox,
+                readonly: !!folder?.readonly
+            }
+        })
+        : []
+
+    while (normalized.length > 0) {
+        const last = normalized[normalized.length - 1]
+        if (last.host || last.sandbox || last.enabled || last.readonly) break
+        normalized.pop()
+    }
+
+    normalized.push(createEmptyMappedFolder())
+    return normalized
+}
+
+const sortQuickConfigs = (configs = []) => {
+    return configs
+        .filter(config => config.id !== 'last_session')
+        .sort((a, b) => {
+            if (a.id === 'windows_default') return -1
+            if (b.id === 'windows_default') return 1
+            return 0
+        })
+}
+
+const getConfigDisplayName = (config) => {
+    if (!config?.name) return 'Sandbox'
+    return config.name[locale.value] || config.name.en || config.name.zh || 'Sandbox'
+}
+
+const parseTristate = (value) => {
+    const parsed = Number(value)
+    return [0, 1, 2].includes(parsed) ? parsed : 0
+}
+
 const activeConfigId = ref(null)
-const quickConfigs = ref(configsData.configs || [])
+const quickConfigs = ref(sortQuickConfigs(configsData.configs || []))
 const alerts = ref([])
 const fileInput = ref(null)
 
 const state = reactive({
-    filename: 'Sandbox.wsb',
+    filename: 'Sandbox',
     vGPU: 0,
     Networking: 0,
     AudioInput: 0,
@@ -38,7 +94,7 @@ const state = reactive({
     HomeDirectory: '',
     LogonCommand: '',
     mappedFolders: [
-        { enabled: false, host: '', sandbox: '', readonly: false }
+        createEmptyMappedFolder()
     ]
 })
 
@@ -55,9 +111,61 @@ const addAlert = (msg, type = 'blue') => {
     }, 5000)
 }
 
+const saveStateCache = () => {
+    try {
+        const cachedState = {
+            filename: normalizeFilenameBase(state.filename),
+            vGPU: state.vGPU,
+            Networking: state.Networking,
+            AudioInput: state.AudioInput,
+            VideoInput: state.VideoInput,
+            PrinterRedirection: state.PrinterRedirection,
+            ClipboardRedirection: state.ClipboardRedirection,
+            ProtectedClient: state.ProtectedClient,
+            MemoryInMB: state.MemoryInMB,
+            HomeDirectory: state.HomeDirectory,
+            LogonCommand: state.LogonCommand,
+            mappedFolders: state.mappedFolders.map(folder => ({
+                enabled: !!folder.enabled,
+                host: folder.host || '',
+                sandbox: folder.sandbox || '',
+                readonly: !!folder.readonly
+            }))
+        }
+        localStorage.setItem(stateCacheKey, JSON.stringify(cachedState))
+    } catch {
+        // ignore cache write errors
+    }
+}
+
+const restoreStateCache = () => {
+    try {
+        const cachedRaw = localStorage.getItem(stateCacheKey)
+        if (!cachedRaw) return
+        const cachedState = JSON.parse(cachedRaw)
+
+        state.filename = normalizeFilenameBase(cachedState.filename)
+        state.vGPU = parseTristate(cachedState.vGPU)
+        state.Networking = parseTristate(cachedState.Networking)
+        state.AudioInput = parseTristate(cachedState.AudioInput)
+        state.VideoInput = parseTristate(cachedState.VideoInput)
+        state.PrinterRedirection = parseTristate(cachedState.PrinterRedirection)
+        state.ClipboardRedirection = parseTristate(cachedState.ClipboardRedirection)
+        state.ProtectedClient = parseTristate(cachedState.ProtectedClient)
+        state.MemoryInMB = cachedState.MemoryInMB === undefined || cachedState.MemoryInMB === null
+            ? ''
+            : String(cachedState.MemoryInMB)
+        state.HomeDirectory = cachedState.HomeDirectory || ''
+        state.LogonCommand = cachedState.LogonCommand || ''
+        state.mappedFolders = normalizeMappedFolders(cachedState.mappedFolders)
+    } catch {
+        // ignore cache parse errors
+    }
+}
+
 const onFolderInput = (index) => {
     if (index === state.mappedFolders.length - 1 && state.mappedFolders[index].host) {
-        state.mappedFolders.push({ enabled: true, host: '', sandbox: '', readonly: false })
+        state.mappedFolders.push(createEmptyMappedFolder())
     }
     if (state.mappedFolders[index].host) {
         state.mappedFolders[index].enabled = true
@@ -74,12 +182,13 @@ const getDefaultSandboxPath = (hostPath) => {
 const loadQuickConfig = (config) => {
     activeConfigId.value = config.id
     if (config.type === 'template') {
-        applyTemplate(config.templateId);
+        applyTemplate(config.templateId)
     } else if (config.type === 'file') {
-        const content = getWsbContentByPath(config.file);
-        if (content) loadWSB(content);
-        else addAlert('Internal Config Not Found: ' + config.file, 'red');
+        const content = getWsbContentByPath(config.file)
+        if (content) loadWSB(content)
+        else addAlert('Internal Config Not Found: ' + config.file, 'red')
     }
+    state.filename = normalizeFilenameBase(getConfigDisplayName(config))
 }
 
 const applyTemplate = (id) => {
@@ -127,7 +236,7 @@ const loadWSB = (xml) => {
             readonly: mfEls[i].getElementsByTagName("ReadOnly")[0]?.textContent.toLowerCase() === 'true'
         })
     }
-    state.mappedFolders.push({ enabled: false, host: '', sandbox: '', readonly: false })
+    state.mappedFolders.push(createEmptyMappedFolder())
     addAlert(t('configLoaded'), 'green')
 }
 
@@ -179,8 +288,10 @@ const download = () => {
     const blob = new Blob([generateWSBXML()], { type: 'text/xml' })
     const url = URL.createObjectURL(blob)
     const a = document.createElement('a')
+    const filename = normalizeFilenameBase(state.filename)
+    state.filename = filename
     a.href = url
-    a.download = state.filename.endsWith('.wsb') ? state.filename : state.filename + '.wsb'
+    a.download = `${filename}.wsb`
     document.body.appendChild(a)
     a.click()
     document.body.removeChild(a)
@@ -193,11 +304,19 @@ const showOpenFileDialog = () => { fileInput.value.click(); }
 const onFileSelected = (e) => {
     const file = e.target.files[0]
     if (!file) return
-    state.filename = file.name
+    state.filename = normalizeFilenameBase(file.name)
     const reader = new FileReader()
     reader.onload = (event) => { loadWSB(event.target.result) }
     reader.readAsText(file)
 }
+
+onMounted(() => {
+    restoreStateCache()
+})
+
+watch(state, () => {
+    saveStateCache()
+}, { deep: true })
 </script>
 
 <template>
@@ -221,12 +340,54 @@ const onFileSelected = (e) => {
   <main class="main-content">
       <div class="card">
           <div class="header">
-              <h1>WSBEditor v{{ editorVersion }}</h1>
+              <div class="title-group">
+                  <div class="title-main">
+                      <h1>{{ t('appTitle') }}</h1>
+                      <span class="version-tag">v{{ editorVersion }}</span>
+                  </div>
+                  <div class="app-description">
+                      <strong>{{ t('appFullName') }}</strong> {{ t('appSubtitle') }}
+                  </div>
+                  <div class="link-group">
+                      <div class="link-item-group">
+                          <span>{{ t('footerCurrent') }}（</span>
+                          <a href="#">🌐 {{ t('footerLinkOnline') }}</a>
+                          <span class="sub-divider">|</span>
+                          <a href="https://github.com/Start2026/WSBEditor" target="_blank" rel="noopener noreferrer">
+                              <svg height="14" width="14" viewBox="0 0 16 16"
+                                  style="vertical-align: text-bottom; fill: currentColor; margin-right: 2px;">
+                                  <path
+                                      d="M8 0C3.58 0 0 3.58 0 8c0 3.54 2.29 6.53 5.47 7.59.4.07.55-.17.55-.38 0-.19-.01-.82-.01-1.49-2.01.37-2.53-.49-2.69-.94-.09-.23-.48-.94-.82-1.13-.28-.15-.68-.52-.01-.53.63-.01 1.08.58 1.23.82.72 1.21 1.87.87 2.33.66.07-.52.28-.87.51-1.07-1.78-.2-3.64-.89-3.64-3.95 0-.87.31-1.59.82-2.15-.08-.2-.36-1.02.08-2.12 0 0 .67-.21 2.2.82.64-.18 1.32-.27 2-.27.68 0 1.36.09 2 .27 1.53-1.04 2.2-.82 2.2-.82.44 1.1.16 1.92.08 2.12.51.56.82 1.27.82 2.15 0 3.07-1.87 3.75-3.65 3.95.29.25.54.73.54 1.48 0 1.07-.01 1.93-.01 2.2 0 .21.15.46.55.38A8.013 8.013 0 0016 8c0-4.42-3.58-8-8-8z">
+                                  </path>
+                              </svg>
+                              {{ t('footerLinkGithub') }}
+                          </a>
+                          <span>）</span>
+                      </div>
+                      <span class="divider">|</span>
+                      <div class="link-item-group">
+                          <span>{{ t('footerOriginal') }}（</span>
+                          <a href="https://leestevetk.github.io/WSBEditor/WSBEditor-Latest.html" target="_blank"
+                              rel="noopener noreferrer">🌐 {{ t('footerLinkOnline') }}</a>
+                          <span class="sub-divider">|</span>
+                          <a href="https://github.com/leestevetk/WSBEditor" target="_blank" rel="noopener noreferrer">
+                              <svg height="14" width="14" viewBox="0 0 16 16"
+                                  style="vertical-align: text-bottom; fill: currentColor; margin-right: 2px;">
+                                  <path
+                                      d="M8 0C3.58 0 0 3.58 0 8c0 3.54 2.29 6.53 5.47 7.59.4.07.55-.17.55-.38 0-.19-.01-.82-.01-1.49-2.01.37-2.53-.49-2.69-.94-.09-.23-.48-.94-.82-1.13-.28-.15-.68-.52-.01-.53.63-.01 1.08.58 1.23.82.72 1.21 1.87.87 2.33.66.07-.52.28-.87.51-1.07-1.78-.2-3.64-.89-3.64-3.95 0-.87.31-1.59.82-2.15-.08-.2-.36-1.02.08-2.12 0 0 .67-.21 2.2.82.64-.18 1.32-.27 2-.27.68 0 1.36.09 2 .27 1.53-1.04 2.2-.82 2.2-.82.44 1.1.16 1.92.08 2.12.51.56.82 1.27.82 2.15 0 3.07-1.87 3.75-3.65 3.95.29.25.54.73.54 1.48 0 1.07-.01 1.93-.01 2.2 0 .21.15.46.55.38A8.013 8.013 0 0016 8c0-4.42-3.58-8-8-8z">
+                                  </path>
+                              </svg>
+                              {{ t('footerLinkGithub') }}
+                          </a>
+                          <span>）</span>
+                      </div>
+                  </div>
+              </div>
               <div class="lang-switch">
-                  <button class="btn-toggle" :class="{ active: locale === 'en' }"
-                      @click="setLanguage('en')">English</button>
                   <button class="btn-toggle" :class="{ active: locale === 'zh' }"
                       @click="setLanguage('zh')">中文</button>
+                  <button class="btn-toggle" :class="{ active: locale === 'en' }"
+                      @click="setLanguage('en')">English</button>
               </div>
           </div>
 
@@ -235,7 +396,10 @@ const onFileSelected = (e) => {
               <div class="section-title">📂 {{ t('filename') }}</div>
               <div class="form-grid">
                   <div class="form-group">
-                      <input type="text" v-model="state.filename" placeholder="Sandbox.wsb">
+                      <div class="input-with-suffix">
+                          <input type="text" v-model="state.filename" placeholder="Sandbox">
+                          <span class="input-suffix">.wsb</span>
+                      </div>
                   </div>
               </div>
           </div>
@@ -266,7 +430,10 @@ const onFileSelected = (e) => {
           <div class="section">
               <div class="section-title">🧠 {{ t('memory') }}</div>
               <div class="form-group" style="max-width: 300px;">
-                  <input type="number" v-model="state.MemoryInMB" :placeholder="t('placeholderAuto')">
+                  <div class="input-with-suffix">
+                      <input type="number" v-model="state.MemoryInMB" :placeholder="t('placeholderAuto')">
+                      <span class="input-suffix">MB</span>
+                  </div>
                   <span class="h6span">{{ t('memoryDesc') }}</span>
               </div>
           </div>
@@ -286,7 +453,7 @@ const onFileSelected = (e) => {
                               <th width="40"></th>
                               <th>{{ t('hostFolder') }}</th>
                               <th>{{ t('sandboxFolder') }}</th>
-                              <th width="120">{{ t('readWrite') }}</th>
+                              <th width="150">{{ t('readWrite') }}</th>
                           </tr>
                       </thead>
                       <tbody>
