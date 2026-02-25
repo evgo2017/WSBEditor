@@ -1,19 +1,6 @@
 {
   "configs": [
     {
-      "id": "last_session",
-      "type": "special",
-      "name": {
-        "en": "Resume Last Session",
-        "zh": "恢复上次会话"
-      },
-      "description": {
-        "en": "Pick up exactly where you left off with all settings preserved.",
-        "zh": "保留所有配置，从上次离开的地方继续。"
-      },
-      "icon": "🕐"
-    },
-    {
       "id": "sandbox_local",
       "type": "file",
       "name": {

@@ -1,5 +1,5 @@
 <script setup>
-import { ref, reactive, onMounted, watch } from 'vue'
+import { ref, reactive, onMounted, watch, onBeforeUnmount } from 'vue'
 import { useI18n } from 'vue-i18n'
 import TristateBox from './components/TristateBox.vue'
 
@@ -22,7 +22,7 @@ const getWsbContentByPath = (filePath) => {
 const editorVersion = "0.7.0"
 const stateCacheKey = 'WSBEditor_StateCache'
 
-const createEmptyMappedFolder = () => ({ enabled: false, host: '', sandbox: '', readonly: false })
+const createMappedFolder = () => ({ host: '', sandbox: '', readonly: false })
 
 const normalizeFilenameBase = (value) => {
     const cleaned = String(value || '')
@@ -33,27 +33,14 @@ const normalizeFilenameBase = (value) => {
 }
 
 const normalizeMappedFolders = (folders) => {
-    const normalized = Array.isArray(folders)
-        ? folders.map((folder) => {
-            const host = folder?.host || ''
-            const sandbox = folder?.sandbox || ''
-            return {
-                enabled: !!folder?.enabled && !!host,
-                host,
-                sandbox,
-                readonly: !!folder?.readonly
-            }
-        })
-        : []
+    const normalized = Array.isArray(folders) ? folders.map((folder) => ({
+        host: folder?.host || '',
+        sandbox: folder?.sandbox || '',
+        readonly: !!folder?.readonly
+    })) : []
 
-    while (normalized.length > 0) {
-        const last = normalized[normalized.length - 1]
-        if (last.host || last.sandbox || last.enabled || last.readonly) break
-        normalized.pop()
-    }
-
-    normalized.push(createEmptyMappedFolder())
-    return normalized
+    const filtered = normalized.filter(folder => folder.host || folder.sandbox || folder.readonly)
+    return filtered.length > 0 ? filtered : [createMappedFolder()]
 }
 
 const sortQuickConfigs = (configs = []) => {
@@ -76,6 +63,24 @@ const parseTristate = (value) => {
     return [0, 1, 2].includes(parsed) ? parsed : 0
 }
 
+const escapeXml = (value) => {
+    return String(value)
+        .replace(/&/g, '&amp;')
+        .replace(/</g, '&lt;')
+        .replace(/>/g, '&gt;')
+        .replace(/"/g, '&quot;')
+        .replace(/'/g, '&apos;')
+}
+
+const normalizeMemoryInMB = () => {
+    const raw = String(state.MemoryInMB || '').trim()
+    if (!raw) return ''
+    if (!/^\d+$/.test(raw)) return null
+    const num = Number(raw)
+    if (!Number.isInteger(num) || num <= 0) return null
+    return String(num)
+}
+
 const activeConfigId = ref(null)
 const quickConfigs = ref(sortQuickConfigs(configsData.configs || []))
 const alerts = ref([])
@@ -91,10 +96,9 @@ const state = reactive({
     ClipboardRedirection: 0,
     ProtectedClient: 0,
     MemoryInMB: '',
-    HomeDirectory: '',
     LogonCommand: '',
     mappedFolders: [
-        createEmptyMappedFolder()
+        createMappedFolder()
     ]
 })
 
@@ -123,10 +127,8 @@ const saveStateCache = () => {
             ClipboardRedirection: state.ClipboardRedirection,
             ProtectedClient: state.ProtectedClient,
             MemoryInMB: state.MemoryInMB,
-            HomeDirectory: state.HomeDirectory,
             LogonCommand: state.LogonCommand,
             mappedFolders: state.mappedFolders.map(folder => ({
-                enabled: !!folder.enabled,
                 host: folder.host || '',
                 sandbox: folder.sandbox || '',
                 readonly: !!folder.readonly
@@ -155,7 +157,6 @@ const restoreStateCache = () => {
         state.MemoryInMB = cachedState.MemoryInMB === undefined || cachedState.MemoryInMB === null
             ? ''
             : String(cachedState.MemoryInMB)
-        state.HomeDirectory = cachedState.HomeDirectory || ''
         state.LogonCommand = cachedState.LogonCommand || ''
         state.mappedFolders = normalizeMappedFolders(cachedState.mappedFolders)
     } catch {
@@ -163,12 +164,14 @@ const restoreStateCache = () => {
     }
 }
 
-const onFolderInput = (index) => {
-    if (index === state.mappedFolders.length - 1 && state.mappedFolders[index].host) {
-        state.mappedFolders.push(createEmptyMappedFolder())
-    }
-    if (state.mappedFolders[index].host) {
-        state.mappedFolders[index].enabled = true
+const addMappedFolder = () => {
+    state.mappedFolders.push(createMappedFolder())
+}
+
+const removeMappedFolder = (index) => {
+    state.mappedFolders.splice(index, 1)
+    if (state.mappedFolders.length === 0) {
+        state.mappedFolders.push(createMappedFolder())
     }
 }
 
@@ -177,6 +180,11 @@ const getDefaultSandboxPath = (hostPath) => {
     const parts = hostPath.split(/[\\\/]/)
     const last = parts[parts.length - 1] || 'Folder'
     return `C:\\Users\\WDAGUtilityAccount\\Desktop\\${last}`
+}
+
+const getSandboxPlaceholder = (hostPath) => {
+    const trimmed = (hostPath || '').trim()
+    return trimmed ? getDefaultSandboxPath(trimmed) : t('placeholderSandboxFolderAuto')
 }
 
 const loadQuickConfig = (config) => {
@@ -200,8 +208,16 @@ const applyTemplate = (id) => {
 const loadWSB = (xml) => {
     const parser = new DOMParser()
     const doc = parser.parseFromString(xml, "text/xml")
+    if (doc.getElementsByTagName('parsererror').length > 0) {
+        addAlert(t('invalidWSB'), 'red')
+        return
+    }
+
     const cfg = doc.getElementsByTagName("Configuration")[0]
-    if (!cfg) return
+    if (!cfg) {
+        addAlert(t('invalidWSB'), 'red')
+        return
+    }
 
     const getVal = (tag) => cfg.getElementsByTagName(tag)[0]?.textContent?.trim() || ''
 
@@ -230,17 +246,22 @@ const loadWSB = (xml) => {
     state.mappedFolders = []
     for (let i = 0; i < mfEls.length; i++) {
         state.mappedFolders.push({
-            enabled: true,
             host: mfEls[i].getElementsByTagName("HostFolder")[0]?.textContent || '',
             sandbox: mfEls[i].getElementsByTagName("SandboxFolder")[0]?.textContent || '',
             readonly: mfEls[i].getElementsByTagName("ReadOnly")[0]?.textContent.toLowerCase() === 'true'
         })
     }
-    state.mappedFolders.push(createEmptyMappedFolder())
+    if (state.mappedFolders.length === 0) state.mappedFolders.push(createMappedFolder())
     addAlert(t('configLoaded'), 'green')
 }
 
 const generateWSBXML = () => {
+    const normalizedMemoryInMB = normalizeMemoryInMB()
+    if (normalizedMemoryInMB === null) {
+        addAlert(t('memoryInvalid'), 'red')
+        return null
+    }
+
     let xml = `<Configuration>\n`
     const addTristate = (tag, val) => {
         if (val === 1) xml += `  <${tag}>Enable</${tag}>\n`
@@ -253,21 +274,23 @@ const generateWSBXML = () => {
     addTristate("PrinterRedirection", state.PrinterRedirection)
     addTristate("ClipboardRedirection", state.ClipboardRedirection)
     addTristate("ProtectedClient", state.ProtectedClient)
-    if (state.MemoryInMB) xml += `  <MemoryInMB>${state.MemoryInMB}</MemoryInMB>\n`
+    if (normalizedMemoryInMB) xml += `  <MemoryInMB>${escapeXml(normalizedMemoryInMB)}</MemoryInMB>\n`
     if (state.LogonCommand.trim()) {
         xml += `  <LogonCommand>\n`
         state.LogonCommand.split('\n').filter(l => l.trim()).forEach(cmd => {
-            xml += `    <Command>${cmd.trim()}</Command>\n`
+            xml += `    <Command>${escapeXml(cmd.trim())}</Command>\n`
         })
         xml += `  </LogonCommand>\n`
     }
-    const folders = state.mappedFolders.filter(f => f.enabled && f.host)
+    const folders = state.mappedFolders.filter(f => (f.host || '').trim())
     if (folders.length > 0) {
         xml += `  <MappedFolders>\n`
         folders.forEach(f => {
+            const host = (f.host || '').trim()
+            const sandbox = (f.sandbox || '').trim() || getDefaultSandboxPath(host)
             xml += `    <MappedFolder>\n`
-            xml += `      <HostFolder>${f.host}</HostFolder>\n`
-            xml += `      <SandboxFolder>${f.sandbox || getDefaultSandboxPath(f.host)}</SandboxFolder>\n`
+            xml += `      <HostFolder>${escapeXml(host)}</HostFolder>\n`
+            xml += `      <SandboxFolder>${escapeXml(sandbox)}</SandboxFolder>\n`
             xml += `      <ReadOnly>${f.readonly}</ReadOnly>\n`
             xml += `    </MappedFolder>\n`
         })
@@ -277,7 +300,6 @@ const generateWSBXML = () => {
     xml += `    <EditorVersion>${editorVersion}</EditorVersion>\n`
     xml += `    <EditorRelease>20260204</EditorRelease>\n`
     xml += `    <DownloadTime>${Date.now()}</DownloadTime>\n`
-    xml += `    <HomeDirectory>${state.HomeDirectory}</HomeDirectory>\n`
     xml += `    <Language>${locale.value}</Language>\n`
     xml += `  </WSBEditorConfig>\n`
     xml += `</Configuration>`
@@ -285,7 +307,10 @@ const generateWSBXML = () => {
 }
 
 const download = () => {
-    const blob = new Blob([generateWSBXML()], { type: 'text/xml' })
+    const xml = generateWSBXML()
+    if (!xml) return
+
+    const blob = new Blob([xml], { type: 'text/xml' })
     const url = URL.createObjectURL(blob)
     const a = document.createElement('a')
     const filename = normalizeFilenameBase(state.filename)
@@ -304,19 +329,33 @@ const showOpenFileDialog = () => { fileInput.value.click(); }
 const onFileSelected = (e) => {
     const file = e.target.files[0]
     if (!file) return
+    activeConfigId.value = null
     state.filename = normalizeFilenameBase(file.name)
     const reader = new FileReader()
     reader.onload = (event) => { loadWSB(event.target.result) }
     reader.readAsText(file)
+    e.target.value = ''
 }
 
 onMounted(() => {
     restoreStateCache()
 })
 
+let cacheSaveTimer = null
 watch(state, () => {
-    saveStateCache()
+    if (cacheSaveTimer) clearTimeout(cacheSaveTimer)
+    cacheSaveTimer = setTimeout(() => {
+        saveStateCache()
+        cacheSaveTimer = null
+    }, 200)
 }, { deep: true })
+
+onBeforeUnmount(() => {
+    if (cacheSaveTimer) {
+        clearTimeout(cacheSaveTimer)
+        saveStateCache()
+    }
+})
 </script>
 
 <template>
@@ -441,32 +480,41 @@ watch(state, () => {
           <!-- Mapped Folders -->
           <div class="section">
               <div class="section-title">📂 {{ t('mappedUserFolders') }}</div>
-              <div class="form-group" style="margin-bottom: 20px;">
-                  <input type="text" v-model="state.HomeDirectory" :placeholder="t('placeholderHomeDir')">
-                  <span class="h6span" v-html="t('homeDirectoryDesc')"></span>
-              </div>
+              <div class="h6span" style="margin-bottom: 10px;">{{ t('mappedFoldersDesc') }}</div>
 
               <div class="table-container">
                   <table>
                       <thead>
                           <tr>
-                              <th width="40"></th>
                               <th>{{ t('hostFolder') }}</th>
                               <th>{{ t('sandboxFolder') }}</th>
                               <th width="150">{{ t('readWrite') }}</th>
+                              <th width="120">{{ t('actions') }}</th>
                           </tr>
                       </thead>
                       <tbody>
                           <tr v-for="(folder, index) in state.mappedFolders" :key="index">
-                              <td><input type="checkbox" v-model="folder.enabled" style="display: initial;"></td>
-                              <td><input type="text" v-model="folder.host" @input="onFolderInput(index)"></td>
+                              <td><input type="text" v-model="folder.host" :placeholder="t('placeholderHostFolder')"></td>
                               <td><input type="text" v-model="folder.sandbox"
-                                      :placeholder="getDefaultSandboxPath(folder.host)"></td>
+                                      :placeholder="getSandboxPlaceholder(folder.host)"></td>
                               <td>
                                   <select v-model="folder.readonly">
                                       <option :value="false">{{ t('readWrite') }}</option>
                                       <option :value="true">{{ t('readOnly') }}</option>
                                   </select>
+                              </td>
+                              <td>
+                                  <button type="button" class="row-action-btn row-action-delete"
+                                      @click="removeMappedFolder(index)">
+                                      {{ t('delete') }}
+                                  </button>
+                              </td>
+                          </tr>
+                          <tr>
+                              <td colspan="4">
+                                  <button type="button" class="row-action-btn row-action-add" @click="addMappedFolder">
+                                      + {{ t('addMappedFolder') }}
+                                  </button>
                               </td>
                           </tr>
                       </tbody>

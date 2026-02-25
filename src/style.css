@@ -332,6 +332,37 @@ td {
     color: var(--text-muted);
 }
 
+.row-action-btn {
+    width: 100%;
+    border: 1px solid var(--border-color);
+    border-radius: 8px;
+    background: #fff;
+    color: var(--text-main);
+    padding: 8px 12px;
+    font-size: 0.8rem;
+    font-weight: 500;
+    cursor: pointer;
+}
+
+.row-action-btn:hover {
+    border-color: var(--primary-color);
+    color: var(--primary-color);
+}
+
+.row-action-delete {
+    color: #b42318;
+}
+
+.row-action-delete:hover {
+    border-color: #ef4444;
+    color: #ef4444;
+}
+
+.row-action-add {
+    background: #eef4ff;
+    border-style: dashed;
+}
+
 /* Footer Actions */
 .footer-actions {
     position: fixed;
