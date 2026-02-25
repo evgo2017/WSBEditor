@@ -21,11 +21,11 @@ WSBEditor 提供可视化表单来管理沙盒配置：
 
 | 环境 | 地址 / 命令 | 说明 |
 | --- | --- | --- |
-| GitHub | <https://github.com/Start2026/WSBEditor> | 项目仓库 |
-| evgo2017.com | <https://evgo2017.com> | 对外预览入口 |
+| evgo2017.com | <https://evgo2017.com/project/WSBEditor> | 对外预览入口 |
+| GitHub | <https://evgo2017.github.io/WSBEditor> | 项目仓库 |
 | 本地运行 | `npm install && npm run dev` | 打开 Vite 输出的本地地址（通常为 `http://127.0.0.1:5173`） |
 
-![WSBEditor 演示](./docs/images/demo.png)
+![WSBEditor 演示](./assets/demo-zh.png)
 
 ## 主要功能
 

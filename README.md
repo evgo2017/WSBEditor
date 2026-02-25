@@ -21,11 +21,11 @@ This project is based on [leestevetk/WSBEditor](https://github.com/leestevetk/WS
 
 | Environment | URL / Command | Notes |
 | --- | --- | --- |
-| GitHub | <https://github.com/Start2026/WSBEditor> | Source repository |
-| evgo2017.com | <https://evgo2017.com> | Public site entry |
+| evgo2017.com | <https://evgo2017.com/project/WSBEditor> | Public site entry |
+| GitHub | <https://evgo2017.github.io/WSBEditor> | 项目仓库 |
 | Local Run | `npm install && npm run dev` | Open the Vite local URL (usually `http://127.0.0.1:5173`) |
 
-![WSBEditor Demo](./docs/images/demo.png)
+![WSBEditor Demo](./assets/demo.png)
 
 ## Main Features
 
