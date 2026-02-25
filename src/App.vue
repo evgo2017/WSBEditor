@@ -1,5 +1,5 @@
 <script setup>
-import { ref, reactive, onMounted, watch, onBeforeUnmount } from 'vue'
+import { ref, reactive, onMounted, watch, onBeforeUnmount, computed } from 'vue'
 import { useI18n } from 'vue-i18n'
 import TristateBox from './components/TristateBox.vue'
 
@@ -40,7 +40,7 @@ const normalizeMappedFolders = (folders) => {
     })) : []
 
     const filtered = normalized.filter(folder => folder.host || folder.sandbox || folder.readonly)
-    return filtered.length > 0 ? filtered : [createMappedFolder()]
+    return filtered
 }
 
 const sortQuickConfigs = (configs = []) => {
@@ -51,6 +51,21 @@ const sortQuickConfigs = (configs = []) => {
             if (b.id === 'windows_default') return 1
             return 0
         })
+}
+
+const configCategoryLabels = {
+    en: {
+        baseline: 'Baseline',
+        files: 'File Workflows',
+        security: 'Security',
+        dev: 'Development'
+    },
+    zh: {
+        baseline: '基础配置',
+        files: '文件场景',
+        security: '安全场景',
+        dev: '开发场景'
+    }
 }
 
 const getConfigDisplayName = (config) => {
@@ -83,6 +98,20 @@ const normalizeMemoryInMB = () => {
 
 const activeConfigId = ref(null)
 const quickConfigs = ref(sortQuickConfigs(configsData.configs || []))
+const groupedQuickConfigs = computed(() => {
+    const groups = new Map()
+    quickConfigs.value.forEach((config) => {
+        const category = config.category || 'baseline'
+        if (!groups.has(category)) groups.set(category, [])
+        groups.get(category).push(config)
+    })
+
+    return Array.from(groups.entries()).map(([key, configs]) => ({
+        key,
+        label: configCategoryLabels[locale.value]?.[key] || key,
+        configs
+    }))
+})
 const alerts = ref([])
 const fileInput = ref(null)
 
@@ -97,9 +126,7 @@ const state = reactive({
     ProtectedClient: 0,
     MemoryInMB: '',
     LogonCommand: '',
-    mappedFolders: [
-        createMappedFolder()
-    ]
+    mappedFolders: []
 })
 
 const setLanguage = (l) => {
@@ -170,9 +197,6 @@ const addMappedFolder = () => {
 
 const removeMappedFolder = (index) => {
     state.mappedFolders.splice(index, 1)
-    if (state.mappedFolders.length === 0) {
-        state.mappedFolders.push(createMappedFolder())
-    }
 }
 
 const getDefaultSandboxPath = (hostPath) => {
@@ -251,7 +275,6 @@ const loadWSB = (xml) => {
             readonly: mfEls[i].getElementsByTagName("ReadOnly")[0]?.textContent.toLowerCase() === 'true'
         })
     }
-    if (state.mappedFolders.length === 0) state.mappedFolders.push(createMappedFolder())
     addAlert(t('configLoaded'), 'green')
 }
 
@@ -365,12 +388,15 @@ onBeforeUnmount(() => {
           <p>{{ t('quickConfigsDesc') }}</p>
       </div>
       <div class="config-list">
-          <div v-for="config in quickConfigs" :key="config.id" class="config-item"
-              :class="{ active: activeConfigId === config.id }" @click="loadQuickConfig(config)">
-              <div class="config-icon">{{ config.icon }}</div>
-              <div class="config-info">
-                  <div v-if="config.name" class="config-name">{{ config.name[locale] }}</div>
-                  <div v-if="config.description" class="config-desc">{{ config.description[locale] }}</div>
+          <div v-for="group in groupedQuickConfigs" :key="group.key" class="config-group">
+              <div class="config-group-title">{{ group.label }}</div>
+              <div v-for="config in group.configs" :key="config.id" class="config-item"
+                  :class="{ active: activeConfigId === config.id }" @click="loadQuickConfig(config)">
+                  <div class="config-icon">{{ config.icon }}</div>
+                  <div class="config-info">
+                      <div v-if="config.name" class="config-name">{{ config.name[locale] }}</div>
+                      <div v-if="config.description" class="config-desc">{{ config.description[locale] }}</div>
+                  </div>
               </div>
           </div>
       </div>
@@ -470,7 +496,8 @@ onBeforeUnmount(() => {
               <div class="section-title">🧠 {{ t('memory') }}</div>
               <div class="form-group" style="max-width: 300px;">
                   <div class="input-with-suffix">
-                      <input type="number" v-model="state.MemoryInMB" :placeholder="t('placeholderAuto')">
+                      <input type="number" min="1" step="1" v-model="state.MemoryInMB"
+                          :placeholder="t('placeholderAuto')">
                       <span class="input-suffix">MB</span>
                   </div>
                   <span class="h6span">{{ t('memoryDesc') }}</span>

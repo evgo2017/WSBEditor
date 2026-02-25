@@ -78,6 +78,19 @@ body {
     padding: 16px;
 }
 
+.config-group {
+    margin-bottom: 14px;
+}
+
+.config-group-title {
+    font-size: 0.72rem;
+    font-weight: 700;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: #64748b;
+    margin: 0 2px 8px 2px;
+}
+
 .config-item {
     display: flex;
     align-items: center;
@@ -360,7 +373,9 @@ td {
 
 .row-action-add {
     background: #eef4ff;
-    border-style: dashed;
+    border-style: solid;
+    border-color: var(--primary-color);
+    color: var(--primary-color);
 }
 
 /* Footer Actions */

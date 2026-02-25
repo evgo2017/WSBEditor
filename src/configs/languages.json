@@ -1,7 +1,7 @@
 {
     "en": {
         "quickConfigs": "Quick Configs",
-        "quickConfigsDesc": "Switch between configurations",
+        "quickConfigsDesc": "Switch between categorized presets",
         "appTitle": "WSBEditor",
         "appFullName": "Windows Sandbox Configuration Editor",
         "appSubtitle": "A lightweight, web-based tool for creating and editing Windows Sandbox configuration files (*.wsb).",
@@ -17,7 +17,7 @@
         "printers": "Printers",
         "clipboard": "Clipboard",
         "memory": "Memory",
-        "memoryDesc": "Maximum Sandbox memory",
+        "memoryDesc": "Maximum Sandbox memory (MB, positive integer)",
         "mappedUserFolders": "Mapped Folders",
         "mappedFoldersDesc": "Map host folders into the sandbox. Leave Sandbox Path empty to auto-generate.",
         "homeDirectoryDesc": "Path on host machine",
@@ -56,7 +56,7 @@
     },
     "zh": {
         "quickConfigs": "常用配置",
-        "quickConfigsDesc": "在预设间快速切换",
+        "quickConfigsDesc": "按分类快速切换预设",
         "appTitle": "WSBEditor",
         "appFullName": "Windows Sandbox 沙盒配置编辑器",
         "appSubtitle": "是一个轻量级的 Web 工具，用于创建和编辑 Windows 沙盒配置文件 (*.wsb)。",
@@ -72,7 +72,7 @@
         "printers": "打印机共享",
         "clipboard": "剪贴板同步",
         "memory": "内存限制",
-        "memoryDesc": "沙盒允许使用的最大内存",
+        "memoryDesc": "沙盒允许使用的最大内存（MB，正整数）",
         "mappedUserFolders": "映射文件夹",
         "mappedFoldersDesc": "把主机文件夹映射到沙盒中；若留空沙盒路径，会自动生成默认路径。",
         "homeDirectoryDesc": "映射到沙盒中的物理路径",
