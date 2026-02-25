@@ -5,13 +5,18 @@
     "type": "module",
     "scripts": {
         "dev": "vite",
-        "build": "vite build"
+        "build": "vite build",
+        "test": "node --test --test-isolation=none tests/wsb-configs.test.mjs tests/wsb-behavior.test.mjs",
+        "test:node": "node --test --test-isolation=none tests/wsb-configs.test.mjs tests/wsb-behavior.test.mjs",
+        "test:ui": "playwright test",
+        "test:ui:headed": "playwright test --headed"
     },
     "dependencies": {
         "vue": "^3.4.0",
         "vue-i18n": "^9.0.0"
     },
     "devDependencies": {
+        "@playwright/test": "^1.55.0",
         "@vitejs/plugin-vue": "^5.0.0",
         "vite": "^5.0.0",
         "vite-plugin-singlefile": "^2.0.0"

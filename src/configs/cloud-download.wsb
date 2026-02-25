@@ -1,11 +1,12 @@
 <Configuration>
     <vGPU>Enable</vGPU>
-    <Networking>Default</Networking>
+    <Networking>Enable</Networking>
     <AudioInput>Disable</AudioInput>
     <VideoInput>Disable</VideoInput>
     <PrinterRedirection>Disable</PrinterRedirection>
-    <ClipboardRedirection>Default</ClipboardRedirection>
+    <ClipboardRedirection>Enable</ClipboardRedirection>
     <ProtectedClient>Disable</ProtectedClient>
+    <MemoryInMB>4096</MemoryInMB>
     <MappedFolders>
         <MappedFolder>
             <HostFolder>\\192.168.0.1\share\downloads</HostFolder>
@@ -23,10 +24,8 @@
     </LogonCommand>
     <WSBEditorConfig>
         <EditorVersion>0.5.0</EditorVersion>
-        <EditorRelease>20260204</EditorRelease>
-        <TemplateID>0</TemplateID>
         <DownloadTime>1770004923645</DownloadTime>
-        <HomeDirectory>\\192.168.0.1\share</HomeDirectory>
-        <Language>zh</Language>
+        <Generator>evgo2017.com</Generator>
+        <GeneratedAtISO>2026-02-25T00:00:00.000Z</GeneratedAtISO>
     </WSBEditorConfig>
 </Configuration>

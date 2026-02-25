@@ -1,14 +1,16 @@
 <Configuration>
     <vGPU>Disable</vGPU>
     <Networking>Disable</Networking>
+    <AudioInput>Disable</AudioInput>
+    <VideoInput>Disable</VideoInput>
+    <PrinterRedirection>Disable</PrinterRedirection>
+    <ClipboardRedirection>Disable</ClipboardRedirection>
     <MemoryInMB>4096</MemoryInMB>
     <ProtectedClient>Enable</ProtectedClient>
     <WSBEditorConfig>
         <EditorVersion>0.5.0</EditorVersion>
-        <EditorRelease>20260204</EditorRelease>
-        <TemplateID>1</TemplateID>
         <DownloadTime>1770004923645</DownloadTime>
-        <HomeDirectory></HomeDirectory>
-        <Language>zh</Language>
+        <Generator>evgo2017.com</Generator>
+        <GeneratedAtISO>2026-02-25T00:00:00.000Z</GeneratedAtISO>
     </WSBEditorConfig>
 </Configuration>

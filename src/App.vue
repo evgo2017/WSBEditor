@@ -5,6 +5,15 @@ import TristateBox from './components/TristateBox.vue'
 
 // 直接导入配置
 import configsData from './configs/configs.json'
+import {
+    createMappedFolder,
+    normalizeFilenameBase,
+    normalizeMappedFolders,
+    parseTristate,
+    getDefaultSandboxPath,
+    parseWSB,
+    generateWSBXML as buildWSBXMLFromState
+} from './wsb-core'
 
 const { t, locale } = useI18n()
 
@@ -21,27 +30,6 @@ const getWsbContentByPath = (filePath) => {
 
 const editorVersion = "0.7.0"
 const stateCacheKey = 'WSBEditor_StateCache'
-
-const createMappedFolder = () => ({ host: '', sandbox: '', readonly: false })
-
-const normalizeFilenameBase = (value) => {
-    const cleaned = String(value || '')
-        .trim()
-        .replace(/\.wsb$/i, '')
-        .replace(/[\\/:*?"<>|]/g, '')
-    return cleaned || 'Sandbox'
-}
-
-const normalizeMappedFolders = (folders) => {
-    const normalized = Array.isArray(folders) ? folders.map((folder) => ({
-        host: folder?.host || '',
-        sandbox: folder?.sandbox || '',
-        readonly: !!folder?.readonly
-    })) : []
-
-    const filtered = normalized.filter(folder => folder.host || folder.sandbox || folder.readonly)
-    return filtered
-}
 
 const sortQuickConfigs = (configs = []) => {
     return configs
@@ -71,29 +59,6 @@ const configCategoryLabels = {
 const getConfigDisplayName = (config) => {
     if (!config?.name) return 'Sandbox'
     return config.name[locale.value] || config.name.en || config.name.zh || 'Sandbox'
-}
-
-const parseTristate = (value) => {
-    const parsed = Number(value)
-    return [0, 1, 2].includes(parsed) ? parsed : 0
-}
-
-const escapeXml = (value) => {
-    return String(value)
-        .replace(/&/g, '&amp;')
-        .replace(/</g, '&lt;')
-        .replace(/>/g, '&gt;')
-        .replace(/"/g, '&quot;')
-        .replace(/'/g, '&apos;')
-}
-
-const normalizeMemoryInMB = () => {
-    const raw = String(state.MemoryInMB || '').trim()
-    if (!raw) return ''
-    if (!/^\d+$/.test(raw)) return null
-    const num = Number(raw)
-    if (!Number.isInteger(num) || num <= 0) return null
-    return String(num)
 }
 
 const activeConfigId = ref(null)
@@ -199,13 +164,6 @@ const removeMappedFolder = (index) => {
     state.mappedFolders.splice(index, 1)
 }
 
-const getDefaultSandboxPath = (hostPath) => {
-    if (!hostPath) return 'Desktop'
-    const parts = hostPath.split(/[\\\/]/)
-    const last = parts[parts.length - 1] || 'Folder'
-    return `C:\\Users\\WDAGUtilityAccount\\Desktop\\${last}`
-}
-
 const getSandboxPlaceholder = (hostPath) => {
     const trimmed = (hostPath || '').trim()
     return trimmed ? getDefaultSandboxPath(trimmed) : t('placeholderSandboxFolderAuto')
@@ -230,103 +188,39 @@ const applyTemplate = (id) => {
 }
 
 const loadWSB = (xml) => {
-    const parser = new DOMParser()
-    const doc = parser.parseFromString(xml, "text/xml")
-    if (doc.getElementsByTagName('parsererror').length > 0) {
+    const parsed = parseWSB(xml)
+    if (!parsed) {
         addAlert(t('invalidWSB'), 'red')
         return
     }
 
-    const cfg = doc.getElementsByTagName("Configuration")[0]
-    if (!cfg) {
-        addAlert(t('invalidWSB'), 'red')
-        return
-    }
-
-    const getVal = (tag) => cfg.getElementsByTagName(tag)[0]?.textContent?.trim() || ''
-
-    const mapTristate = (val) => {
-        const v = val.toLowerCase()
-        if (v === 'enable' || v === 'true') return 1
-        if (v === 'disable' || v === 'false') return 2
-        return 0
-    }
-
-    state.vGPU = mapTristate(getVal("vGPU"))
-    state.Networking = mapTristate(getVal("Networking"))
-    state.AudioInput = mapTristate(getVal("AudioInput"))
-    state.VideoInput = mapTristate(getVal("VideoInput"))
-    state.PrinterRedirection = mapTristate(getVal("PrinterRedirection"))
-    state.ClipboardRedirection = mapTristate(getVal("ClipboardRedirection"))
-    state.ProtectedClient = mapTristate(getVal("ProtectedClient"))
-    state.MemoryInMB = getVal("MemoryInMB")
-
-    const commands = []
-    const cmdEls = cfg.getElementsByTagName("Command")
-    for (let i = 0; i < cmdEls.length; i++) commands.push(cmdEls[i].textContent)
-    state.LogonCommand = commands.join('\n')
-
-    const mfEls = cfg.getElementsByTagName("MappedFolder")
-    state.mappedFolders = []
-    for (let i = 0; i < mfEls.length; i++) {
-        state.mappedFolders.push({
-            host: mfEls[i].getElementsByTagName("HostFolder")[0]?.textContent || '',
-            sandbox: mfEls[i].getElementsByTagName("SandboxFolder")[0]?.textContent || '',
-            readonly: mfEls[i].getElementsByTagName("ReadOnly")[0]?.textContent.toLowerCase() === 'true'
-        })
-    }
+    state.vGPU = parsed.vGPU
+    state.Networking = parsed.Networking
+    state.AudioInput = parsed.AudioInput
+    state.VideoInput = parsed.VideoInput
+    state.PrinterRedirection = parsed.PrinterRedirection
+    state.ClipboardRedirection = parsed.ClipboardRedirection
+    state.ProtectedClient = parsed.ProtectedClient
+    state.MemoryInMB = parsed.MemoryInMB
+    state.LogonCommand = parsed.LogonCommand
+    state.mappedFolders = parsed.mappedFolders
     addAlert(t('configLoaded'), 'green')
 }
 
 const generateWSBXML = () => {
-    const normalizedMemoryInMB = normalizeMemoryInMB()
-    if (normalizedMemoryInMB === null) {
+    const result = buildWSBXMLFromState(state, {
+        editorVersion,
+        downloadTime: Date.now(),
+        generator: 'evgo2017.com',
+        generatedAtISO: new Date().toISOString()
+    })
+
+    if (!result.ok) {
         addAlert(t('memoryInvalid'), 'red')
         return null
     }
 
-    let xml = `<Configuration>\n`
-    const addTristate = (tag, val) => {
-        if (val === 1) xml += `  <${tag}>Enable</${tag}>\n`
-        if (val === 2) xml += `  <${tag}>Disable</${tag}>\n`
-    }
-    addTristate("vGPU", state.vGPU)
-    addTristate("Networking", state.Networking)
-    addTristate("AudioInput", state.AudioInput)
-    addTristate("VideoInput", state.VideoInput)
-    addTristate("PrinterRedirection", state.PrinterRedirection)
-    addTristate("ClipboardRedirection", state.ClipboardRedirection)
-    addTristate("ProtectedClient", state.ProtectedClient)
-    if (normalizedMemoryInMB) xml += `  <MemoryInMB>${escapeXml(normalizedMemoryInMB)}</MemoryInMB>\n`
-    if (state.LogonCommand.trim()) {
-        xml += `  <LogonCommand>\n`
-        state.LogonCommand.split('\n').filter(l => l.trim()).forEach(cmd => {
-            xml += `    <Command>${escapeXml(cmd.trim())}</Command>\n`
-        })
-        xml += `  </LogonCommand>\n`
-    }
-    const folders = state.mappedFolders.filter(f => (f.host || '').trim())
-    if (folders.length > 0) {
-        xml += `  <MappedFolders>\n`
-        folders.forEach(f => {
-            const host = (f.host || '').trim()
-            const sandbox = (f.sandbox || '').trim() || getDefaultSandboxPath(host)
-            xml += `    <MappedFolder>\n`
-            xml += `      <HostFolder>${escapeXml(host)}</HostFolder>\n`
-            xml += `      <SandboxFolder>${escapeXml(sandbox)}</SandboxFolder>\n`
-            xml += `      <ReadOnly>${f.readonly}</ReadOnly>\n`
-            xml += `    </MappedFolder>\n`
-        })
-        xml += `  </MappedFolders>\n`
-    }
-    xml += `  <WSBEditorConfig>\n`
-    xml += `    <EditorVersion>${editorVersion}</EditorVersion>\n`
-    xml += `    <EditorRelease>20260204</EditorRelease>\n`
-    xml += `    <DownloadTime>${Date.now()}</DownloadTime>\n`
-    xml += `    <Language>${locale.value}</Language>\n`
-    xml += `  </WSBEditorConfig>\n`
-    xml += `</Configuration>`
-    return xml
+    return result.xml
 }
 
 const download = () => {
@@ -391,6 +285,7 @@ onBeforeUnmount(() => {
           <div v-for="group in groupedQuickConfigs" :key="group.key" class="config-group">
               <div class="config-group-title">{{ group.label }}</div>
               <div v-for="config in group.configs" :key="config.id" class="config-item"
+                  :data-testid="`quick-config-${config.id}`"
                   :class="{ active: activeConfigId === config.id }" @click="loadQuickConfig(config)">
                   <div class="config-icon">{{ config.icon }}</div>
                   <div class="config-info">
@@ -449,9 +344,9 @@ onBeforeUnmount(() => {
                   </div>
               </div>
               <div class="lang-switch">
-                  <button class="btn-toggle" :class="{ active: locale === 'zh' }"
+                  <button class="btn-toggle" data-testid="lang-zh" :class="{ active: locale === 'zh' }"
                       @click="setLanguage('zh')">中文</button>
-                  <button class="btn-toggle" :class="{ active: locale === 'en' }"
+                  <button class="btn-toggle" data-testid="lang-en" :class="{ active: locale === 'en' }"
                       @click="setLanguage('en')">English</button>
               </div>
           </div>
@@ -462,7 +357,7 @@ onBeforeUnmount(() => {
               <div class="form-grid">
                   <div class="form-group">
                       <div class="input-with-suffix">
-                          <input type="text" v-model="state.filename" placeholder="Sandbox">
+                          <input type="text" data-testid="filename-input" v-model="state.filename" placeholder="Sandbox">
                           <span class="input-suffix">.wsb</span>
                       </div>
                   </div>
@@ -496,7 +391,7 @@ onBeforeUnmount(() => {
               <div class="section-title">🧠 {{ t('memory') }}</div>
               <div class="form-group" style="max-width: 300px;">
                   <div class="input-with-suffix">
-                      <input type="number" min="1" step="1" v-model="state.MemoryInMB"
+                      <input type="number" data-testid="memory-input" min="1" step="1" v-model="state.MemoryInMB"
                           :placeholder="t('placeholderAuto')">
                       <span class="input-suffix">MB</span>
                   </div>
@@ -520,18 +415,18 @@ onBeforeUnmount(() => {
                           </tr>
                       </thead>
                       <tbody>
-                          <tr v-for="(folder, index) in state.mappedFolders" :key="index">
-                              <td><input type="text" v-model="folder.host" :placeholder="t('placeholderHostFolder')"></td>
-                              <td><input type="text" v-model="folder.sandbox"
+                          <tr v-for="(folder, index) in state.mappedFolders" :key="index" :data-testid="`mapped-folder-row-${index}`">
+                              <td><input type="text" :data-testid="`mapped-host-${index}`" v-model="folder.host" :placeholder="t('placeholderHostFolder')"></td>
+                              <td><input type="text" :data-testid="`mapped-sandbox-${index}`" v-model="folder.sandbox"
                                       :placeholder="getSandboxPlaceholder(folder.host)"></td>
                               <td>
-                                  <select v-model="folder.readonly">
+                                  <select :data-testid="`mapped-readonly-${index}`" v-model="folder.readonly">
                                       <option :value="false">{{ t('readWrite') }}</option>
                                       <option :value="true">{{ t('readOnly') }}</option>
                                   </select>
                               </td>
                               <td>
-                                  <button type="button" class="row-action-btn row-action-delete"
+                                  <button type="button" class="row-action-btn row-action-delete" :data-testid="`mapped-remove-${index}`"
                                       @click="removeMappedFolder(index)">
                                       {{ t('delete') }}
                                   </button>
@@ -539,7 +434,7 @@ onBeforeUnmount(() => {
                           </tr>
                           <tr>
                               <td colspan="4">
-                                  <button type="button" class="row-action-btn row-action-add" @click="addMappedFolder">
+                                  <button type="button" class="row-action-btn row-action-add" data-testid="mapped-add" @click="addMappedFolder">
                                       + {{ t('addMappedFolder') }}
                                   </button>
                               </td>
@@ -553,7 +448,7 @@ onBeforeUnmount(() => {
           <div class="section">
               <div class="section-title">📜 {{ t('logonCommands') }}</div>
               <div class="form-group">
-                  <textarea v-model="state.LogonCommand" rows="4"
+                  <textarea data-testid="logon-command" v-model="state.LogonCommand" rows="4"
                       :placeholder="t('placeholderLogonCommand')"></textarea>
                   <span class="h6span">{{ t('logonCommandsDesc') }}</span>
               </div>
@@ -572,11 +467,11 @@ onBeforeUnmount(() => {
 
   <!-- Footer Actions -->
   <div class="footer-actions">
-      <button class="btn btn-secondary" @click="showOpenFileDialog">📁 {{ t('open') }}</button>
-      <button class="btn btn-primary" @click="download">💾 {{ t('download') }}</button>
+      <button class="btn btn-secondary" data-testid="open-file" @click="showOpenFileDialog">📁 {{ t('open') }}</button>
+      <button class="btn btn-primary" data-testid="download-wsb" @click="download">💾 {{ t('download') }}</button>
   </div>
 
-  <input type="file" ref="fileInput" style="display: none" @change="onFileSelected" accept=".wsb">
+  <input type="file" data-testid="file-input" ref="fileInput" style="display: none" @change="onFileSelected" accept=".wsb">
 
   <div class="alert-container">
       <div v-for="alert in alerts" :key="alert.id" class="alert" :class="alert.type">
