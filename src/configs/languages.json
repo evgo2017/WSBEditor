@@ -51,8 +51,7 @@
     "footerIntro": "WSBEditor is a lightweight, web-based tool for creating and editing Windows Sandbox configuration files (*.wsb).",
     "footerOriginal": "Original Project",
     "footerCurrent": "This Project",
-    "footerLinkOnline": "Online",
-    "footerLinkGithub": "GitHub"
+    "footerLinkOnline": "Online"
   },
   "zh": {
     "quickConfigs": "常用配置",
@@ -106,7 +105,6 @@
     "footerIntro": "WSBEditor 是一个轻量级 Web 工具，用于创建和编辑 Windows 沙盒配置文件（*.wsb）。",
     "footerOriginal": "原始项目",
     "footerCurrent": "当前项目",
-    "footerLinkOnline": "在线",
-    "footerLinkGithub": "GitHub"
+    "footerLinkOnline": "在线"
   }
 }

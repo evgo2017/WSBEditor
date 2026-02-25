@@ -1,77 +1,102 @@
 # WSBEditor
 
-[中文] | [英文]
+Windows Sandbox configuration editor built with Vue 3.  
+It helps you create, edit, load, and export `.wsb` files in a browser UI.
 
-## 关于此项目
+[Chinese](./README-zh.md) | [English]
 
-本项目基于 [leestevetk/WSBEditor](https://github.com/leestevetk/WSBEditor) 修改而来。
+## Overview
 
-原项目使用 **GNU General Public License v3.0 (GPL-3.0)** 许可证。
-因此，本项目同样在 GPL-3.0 条款下发布。
+WSBEditor is a lightweight tool for managing Windows Sandbox profiles:
 
-### 与原项目的差异
-- 增加了多语言，补充了中文
-- 
-**[Launch the latest version of WSBEditor](https://leestevetk.github.io/WSBEditor/WSBEditor-Latest.html).**
+- Edit common sandbox options in a form UI
+- Switch between built-in quick configs
+- Load existing `.wsb` files
+- Export generated `.wsb` files
+- Persist the latest form state in browser cache
 
-WSBEditor is a web-based [Windows Sandbox](https://docs.microsoft.com/en-us/windows/security/threat-protection/windows-sandbox/windows-sandbox-overview) configuration file (*.wsb) editor.
+This project is based on [leestevetk/WSBEditor](https://github.com/leestevetk/WSBEditor) and is released under GPL-3.0.
 
-- Lightweight (_everything in one file_)
-- Runs directly from browser
-- No installation required
-- Includes [new configuration options introduced in Windows 10 Version 2004 (aka the May 2020 update)](https://docs.microsoft.com/en-us/windows/whats-new/whats-new-windows-10-version-2004#windows-sandbox).
+## Preview Links
 
-## Functions
-- Create Sandbox configuration files
-- Templates for Sandbox configuration
-- Open (and edit) your configuration files
+| Environment | URL / Command | Notes |
+| --- | --- | --- |
+| GitHub | <https://github.com/Start2026/WSBEditor> | Source repository |
+| evgo2017.com | <https://evgo2017.com> | Public site entry |
+| Local Run | `npm install && npm run dev` | Open the Vite local URL (usually `http://127.0.0.1:5173`) |
 
-## Available Versions
-You may choose between:
-- [WSBEditor-Latest.html](https://leestevetk.github.io/WSBEditor/WSBEditor-Latest.html) (Latest Release) **(Recommended)**
-- [WSBEditor.html](https://leestevetk.github.io/WSBEditor/WSBEditor.html) (Nightly builds)
-- [Browse older releases](https://github.com/leestevetk/WSBEditor/releases)
+![WSBEditor Demo](./docs/images/demo.png)
 
-## How to Use
+## Main Features
 
-### Option 1: Launch Directly (Recommended)
-You may **[launch the latest version of WSBEditor directly from here](https://leesteve.tk/WSBEditor/WSBEditor.html)** - simple.
+- Quick configs from files in `src/configs/*.wsb`
+- Bilingual interface (`en` / `zh`)
+- Tri-state controls for sandbox switches (`Default`, `Enable`, `Disable`)
+- Mapped folder management
+- Memory limit validation (positive integer MB)
+- Logon command editor (multiple commands supported)
+- Safe filename normalization before download
 
-### Option 2: Download WSBEditor
-You may also **[download WSBEditor onto your device](https://github.com/leestevetk/WSBEditor/releases)**, then double-click the file to launch it in your browser.  This is particularly useful if you want to use WSBEditor while you go offline.
+## Built-in Quick Configs
 
-> **For the tech-savvy reader like you:** WSBEditor uses only plain vanilla JavaScript (i.e. no jQuery or other fancy JS frameworks/libraries).  Therefore, a **downloaded copy of WSBEditor works perfectly while your device is offline**, except that you may see old-school Arial and miss out [my favourite font Ubuntu](https://design.ubuntu.com/font/) (_spot the irony here?_).  This beauty of vanilla JS excuses me for being lazy and not learning jQuery.
+- `Windows Default`
+- `Cloud Download Folder`
+- `Isolated Analysis`
 
-## Compatibility
+Config definitions are managed in:
 
-WSBEditor creates Windows Sandbox configuration files, which are compatible with any system:
-- Running **Windows 10 build 18342** or later; and
-- With **Windows Sandbox feature** enabled.
+- `src/configs/configs.json`
+- `src/configs/*.wsb`
 
-Please note that **certain configuration options (e.g. printer redirection) require newer versions of Windows 10.**  If certain configuration options are incompatible with your system, you can still run the configuration file, but the incompatible options will of course be ineffective. 
+## Config Maintenance
 
-> WSBEditor itself is a simple web app - it runs on **any browser** (including on your phone!!).  But after all you will need a PC to launch a Windows Sandbox.
+Quick configs are file-driven. Each item in `src/configs/configs.json` should map to one `.wsb` file.
 
-## Support or Contact
+### Add a quick config
 
-WSBEditor is a work in progress (actually my little attempt at coding while staying-at-home during the [COVID-19 pandemic](https://en.wikipedia.org/wiki/COVID-19_pandemic)).
+1. Create a new `.wsb` file in `src/configs/` (for example: `my-profile.wsb`).
+2. Add an item to `src/configs/configs.json` with:
+   - `id` (unique key, such as `my_profile`)
+   - `category` (`baseline` / `files` / `security`)
+   - `name.en` and `name.zh`
+   - `description.en` and `description.zh`
+   - `icon`
+   - `file` (for example `configs/my-profile.wsb`)
+3. Run tests:
+   ```bash
+   npm run test
+   ```
 
-Please feel free to support the project or report any issue at the project's [GitHub page](https://github.com/leestevetk/WSBEditor).
+### Modify an existing quick config
 
-## Licence
+1. Update the corresponding `src/configs/*.wsb`.
+2. If needed, update metadata in `src/configs/configs.json`.
+3. Run tests:
+   ```bash
+   npm run test
+   ```
 
-Copyright (C) 2020 Steve's Toolkit
+### Remove a quick config
 
-This program is free software: you can redistribute it and/or modify it under the terms of the GNU General Public License as published by the Free Software Foundation, either version 3 of the License, or (at your option) any later version.
+1. Remove the config item from `src/configs/configs.json`.
+2. Delete the related `.wsb` file in `src/configs/`.
+3. Run tests:
+   ```bash
+   npm run test
+   ```
 
-This program is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU General Public License for more details.
+### Notes
 
-> Windows, Windows Sandbox and/or WSB is/are/may be registered trademarks of their respective owner(s).
+- Keep `id` stable to avoid breaking UI tests and automation selectors.
+- Keep both `en` and `zh` texts updated together.
 
-> A sidenote: the author happens to a little law student in Hong Kong and is a bit curious about the legal force of GPL in English law jurisdictions.  Please reach me out if you know any English/Commonwealth court rulings on the subject.
+## Compatibility Notes
 
-### 许可证
-此项目基于GPL-3.0许可证。详细信息请查看 [LICENSE](LICENSE) 文件。
+- Generated files target Windows Sandbox `.wsb` format.
+- Running sandbox profiles requires Windows with Windows Sandbox enabled.
 
-**重要**: 使用本项目的代码必须遵守GPL-3.0许可证的要求，
-包括开源你的修改版本。
+## License
+
+GPL-3.0. See [LICENSE](./LICENSE).
+
+Important: if you distribute modified code, you must comply with GPL-3.0 obligations.

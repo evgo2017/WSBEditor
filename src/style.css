@@ -78,6 +78,16 @@ body {
     padding: 16px;
 }
 
+.sidebar-actions {
+    padding: 16px;
+    border-top: 1px solid var(--border-color);
+}
+
+.sidebar-actions .btn {
+    width: 100%;
+    justify-content: center;
+}
+
 .config-group {
     margin-bottom: 14px;
 }
