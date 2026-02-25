@@ -7,10 +7,10 @@ import { generateWSBXML, getDefaultSandboxPath, parseWSB } from '../src/wsb-core
 const rootDir = process.cwd()
 const configsJsonPath = path.join(rootDir, 'src', 'configs', 'configs.json')
 const configs = JSON.parse(readFileSync(configsJsonPath, 'utf8')).configs
-const fileConfigs = configs.filter((config) => config.type === 'file')
+const wsbConfigs = configs.filter((config) => typeof config.file === 'string' && config.file.endsWith('.wsb'))
 
-test('selecting quick config (file type) and re-generating keeps semantic content', () => {
-    for (const config of fileConfigs) {
+test('selecting quick config and re-generating keeps semantic content', () => {
+    for (const config of wsbConfigs) {
         const absolutePath = path.join(rootDir, 'src', config.file)
         const sourceXml = readFileSync(absolutePath, 'utf8')
         const sourceState = parseWSB(sourceXml)

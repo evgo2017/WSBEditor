@@ -32,6 +32,7 @@ test.beforeEach(async ({ page }) => {
 
 test('renders key UI controls', async ({ page }) => {
     await expect(page.getByTestId('quick-config-windows_default')).toBeVisible()
+    await expect(page.getByTestId('quick-config-dev_test')).toHaveCount(0)
     await expect(page.getByTestId('filename-input')).toBeVisible()
     await expect(page.getByTestId('memory-input')).toBeVisible()
     await expect(page.getByTestId('mapped-add')).toBeVisible()

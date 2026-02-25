@@ -1,4 +1,4 @@
-<script setup>
+﻿<script setup>
 import { ref, reactive, onMounted, watch, onBeforeUnmount, computed } from 'vue'
 import { useI18n } from 'vue-i18n'
 import TristateBox from './components/TristateBox.vue'
@@ -45,14 +45,12 @@ const configCategoryLabels = {
     en: {
         baseline: 'Baseline',
         files: 'File Workflows',
-        security: 'Security',
-        dev: 'Development'
+        security: 'Security'
     },
     zh: {
         baseline: '基础配置',
         files: '文件场景',
         security: '安全场景',
-        dev: '开发场景'
     }
 }
 
@@ -171,20 +169,10 @@ const getSandboxPlaceholder = (hostPath) => {
 
 const loadQuickConfig = (config) => {
     activeConfigId.value = config.id
-    if (config.type === 'template') {
-        applyTemplate(config.templateId)
-    } else if (config.type === 'file') {
-        const content = getWsbContentByPath(config.file)
-        if (content) loadWSB(content)
-        else addAlert('Internal Config Not Found: ' + config.file, 'red')
-    }
+    const content = getWsbContentByPath(config.file)
+    if (content) loadWSB(content)
+    else addAlert('Internal Config Not Found: ' + config.file, 'red')
     state.filename = normalizeFilenameBase(getConfigDisplayName(config))
-}
-
-const applyTemplate = (id) => {
-    state.vGPU = id === 0 ? 0 : 1
-    state.Networking = id === 1 ? 2 : 1
-    addAlert(t('templateApplied'), 'green')
 }
 
 const loadWSB = (xml) => {

@@ -2,7 +2,6 @@
   "configs": [
     {
       "id": "windows_default",
-      "type": "template",
       "category": "baseline",
       "name": {
         "en": "Windows Default",
@@ -10,14 +9,13 @@
       },
       "description": {
         "en": "Closest to the default Windows Sandbox behavior.",
-        "zh": "最接近 Windows Sandbox 默认行为。"
+        "zh": "最接近 Windows Sandbox 的默认行为。"
       },
-      "icon": "🪟",
-      "templateId": 0
+      "icon": "🔧",
+      "file": "configs/windows-default.wsb"
     },
     {
       "id": "sandbox_local",
-      "type": "file",
       "category": "files",
       "name": {
         "en": "Cloud Download Folder",
@@ -32,7 +30,6 @@
     },
     {
       "id": "isolated",
-      "type": "file",
       "category": "security",
       "name": {
         "en": "Isolated Analysis",
@@ -44,21 +41,6 @@
       },
       "icon": "🛡️",
       "file": "configs/isolated.wsb"
-    },
-    {
-      "id": "dev_test",
-      "type": "file",
-      "category": "dev",
-      "name": {
-        "en": "Dev Test Environment",
-        "zh": "开发测试环境"
-      },
-      "description": {
-        "en": "vGPU + network + clipboard for software testing.",
-        "zh": "启用 vGPU、网络和剪贴板，适合开发测试。"
-      },
-      "icon": "🔧",
-      "file": "configs/dev-test.wsb"
     }
   ]
 }

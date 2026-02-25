@@ -9,17 +9,25 @@ const configsDir = path.join(rootDir, 'src', 'configs')
 const configsJsonPath = path.join(configsDir, 'configs.json')
 
 const configs = JSON.parse(readFileSync(configsJsonPath, 'utf8')).configs
-const fileConfigs = configs.filter((config) => config.type === 'file')
+const wsbConfigs = configs.filter((config) => typeof config.file === 'string' && config.file.endsWith('.wsb'))
+
+test('all quick configs are file-backed and have no template fields', () => {
+    for (const config of configs) {
+        assert.equal(typeof config.file, 'string', `config "${config.id}" must define a .wsb file`)
+        assert.equal(Object.prototype.hasOwnProperty.call(config, 'type'), false, `config "${config.id}" should not use "type"`)
+        assert.equal(Object.prototype.hasOwnProperty.call(config, 'templateId'), false, `config "${config.id}" should not use "templateId"`)
+    }
+})
 
 test('all file configs reference existing wsb files', () => {
-    for (const config of fileConfigs) {
+    for (const config of wsbConfigs) {
         const absolutePath = path.join(rootDir, 'src', config.file)
         assert.equal(existsSync(absolutePath), true, `missing file for config "${config.id}": ${config.file}`)
     }
 })
 
 test('no orphan wsb files remain in src/configs', () => {
-    const referencedWsbFiles = new Set(fileConfigs.map((config) => path.basename(config.file)))
+    const referencedWsbFiles = new Set(wsbConfigs.map((config) => path.basename(config.file)))
     const actualWsbFiles = readdirSync(configsDir).filter((name) => name.endsWith('.wsb'))
 
     assert.deepEqual(
@@ -30,7 +38,7 @@ test('no orphan wsb files remain in src/configs', () => {
 })
 
 test('referenced wsb metadata contains required fields', () => {
-    for (const config of fileConfigs) {
+    for (const config of wsbConfigs) {
         const absolutePath = path.join(rootDir, 'src', config.file)
         const wsb = readFileSync(absolutePath, 'utf8')
 
