@@ -20,7 +20,7 @@ if (baiduId && !import.meta.env.DEV) {
     window._hmt.push(['_setAutoPageview', false])
     window._hmt.push(['_trackPageview', trackedUrl])
 
-    (function () {
+    ;(function () {
         const hm = document.createElement("script")
         hm.src = `https://hm.baidu.com/hm.js?${baiduId}`
         const s = document.getElementsByTagName("script")[0]
