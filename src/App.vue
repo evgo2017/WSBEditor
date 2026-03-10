@@ -1,6 +1,10 @@
-﻿<script setup>
+<script setup>
 import { ref, reactive, onMounted, watch, onBeforeUnmount, computed } from 'vue'
 import { useI18n } from 'vue-i18n'
+
+const isSidebarOpen = ref(false)
+const toggleSidebar = () => { isSidebarOpen.value = !isSidebarOpen.value }
+const closeSidebar = () => { isSidebarOpen.value = false }
 import TristateBox from './components/TristateBox.vue'
 import packageJson from '../package.json'
 
@@ -265,17 +269,21 @@ onBeforeUnmount(() => {
 </script>
 
 <template>
-  <aside class="sidebar">
+  <!-- Mobile Sidebar Overlay -->
+  <div class="sidebar-overlay" :class="{ open: isSidebarOpen }" @click="closeSidebar"></div>
+
+  <aside class="sidebar" :class="{ open: isSidebarOpen }">
       <div class="sidebar-header">
           <h3>{{ t('quickConfigs') }}</h3>
           <p>{{ t('quickConfigsDesc') }}</p>
+          <button class="sidebar-close-btn" @click="closeSidebar" aria-label="Close sidebar">✕</button>
       </div>
       <div class="config-list">
           <div v-for="group in groupedQuickConfigs" :key="group.key" class="config-group">
               <div class="config-group-title">{{ group.label }}</div>
               <div v-for="config in group.configs" :key="config.id" class="config-item"
                   :data-testid="`quick-config-${config.id}`"
-                  :class="{ active: activeConfigId === config.id }" @click="loadQuickConfig(config)">
+                  :class="{ active: activeConfigId === config.id }" @click="loadQuickConfig(config); closeSidebar()">
                   <div class="config-icon">{{ config.icon }}</div>
                   <div class="config-info">
                       <div v-if="config.name" class="config-name">{{ config.name[locale] }}</div>
@@ -312,8 +320,10 @@ onBeforeUnmount(() => {
                                       d="M8 0C3.58 0 0 3.58 0 8c0 3.54 2.29 6.53 5.47 7.59.4.07.55-.17.55-.38 0-.19-.01-.82-.01-1.49-2.01.37-2.53-.49-2.69-.94-.09-.23-.48-.94-.82-1.13-.28-.15-.68-.52-.01-.53.63-.01 1.08.58 1.23.82.72 1.21 1.87.87 2.33.66.07-.52.28-.87.51-1.07-1.78-.2-3.64-.89-3.64-3.95 0-.87.31-1.59.82-2.15-.08-.2-.36-1.02.08-2.12 0 0 .67-.21 2.2.82.64-.18 1.32-.27 2-.27.68 0 1.36.09 2 .27 1.53-1.04 2.2-.82 2.2-.82.44 1.1.16 1.92.08 2.12.51.56.82 1.27.82 2.15 0 3.07-1.87 3.75-3.65 3.95.29.25.54.73.54 1.48 0 1.07-.01 1.93-.01 2.2 0 .21.15.46.55.38A8.013 8.013 0 0016 8c0-4.42-3.58-8-8-8z">
                                   </path>
                               </svg>
-                              evgo2017/WSBEditor
+                              evgo2017
                           </a>
+                          <span class="sub-divider">|</span>
+                          <a href="https://evgo2017.com/blog/windows-sandbox-safe-downloading" target="_blank" rel="noopener noreferrer">📖 {{ t('footerMaintenance') }}</a>
                           <span>）</span>
                       </div>
                       <span class="divider">|</span>
@@ -329,17 +339,20 @@ onBeforeUnmount(() => {
                                       d="M8 0C3.58 0 0 3.58 0 8c0 3.54 2.29 6.53 5.47 7.59.4.07.55-.17.55-.38 0-.19-.01-.82-.01-1.49-2.01.37-2.53-.49-2.69-.94-.09-.23-.48-.94-.82-1.13-.28-.15-.68-.52-.01-.53.63-.01 1.08.58 1.23.82.72 1.21 1.87.87 2.33.66.07-.52.28-.87.51-1.07-1.78-.2-3.64-.89-3.64-3.95 0-.87.31-1.59.82-2.15-.08-.2-.36-1.02.08-2.12 0 0 .67-.21 2.2.82.64-.18 1.32-.27 2-.27.68 0 1.36.09 2 .27 1.53-1.04 2.2-.82 2.2-.82.44 1.1.16 1.92.08 2.12.51.56.82 1.27.82 2.15 0 3.07-1.87 3.75-3.65 3.95.29.25.54.73.54 1.48 0 1.07-.01 1.93-.01 2.2 0 .21.15.46.55.38A8.013 8.013 0 0016 8c0-4.42-3.58-8-8-8z">
                                   </path>
                               </svg>
-                              leestevetk/WSBEditor
+                              leestevetk
                           </a>
                           <span>）</span>
                       </div>
                   </div>
               </div>
-              <div class="lang-switch">
-                  <button class="btn-toggle" data-testid="lang-zh" :class="{ active: locale === 'zh' }"
-                      @click="setLanguage('zh')">中文</button>
-                  <button class="btn-toggle" data-testid="lang-en" :class="{ active: locale === 'en' }"
-                      @click="setLanguage('en')">English</button>
+              <div class="header-right">
+                  <div class="lang-switch">
+                      <button class="btn-toggle" data-testid="lang-zh" :class="{ active: locale === 'zh' }"
+                          @click="setLanguage('zh')">中文</button>
+                      <button class="btn-toggle" data-testid="lang-en" :class="{ active: locale === 'en' }"
+                          @click="setLanguage('en')">English</button>
+                  </div>
+                  <button class="mobile-menu-btn" @click="toggleSidebar" aria-label="Quick configs">☰</button>
               </div>
           </div>
 
